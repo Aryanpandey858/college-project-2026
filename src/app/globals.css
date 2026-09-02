@@ -1,0 +1,4 @@
+/* globals.css: Global styles, Tailwind CSS directives, and dark-mode surveillance theme variables. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
