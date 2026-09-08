@@ -1,4 +1,212 @@
-/* globals.css: Global styles, Tailwind CSS directives, and dark-mode surveillance theme variables. */
+/* ============================================================
+   globals.css — AI Surveillance Platform Global Styles
+   Tailwind directives + CRT scanlines + HUD neon utilities
+   ============================================================ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Google Fonts ──────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ── CSS Custom Properties ─────────────────────────────────── */
+:root {
+  --bg:          #090d16;
+  --surface:     #0f172a;
+  --surface-2:   #111827;
+  --border:      #1e293b;
+  --border-2:    #334155;
+  --danger:      #ef4444;
+  --warning:     #f59e0b;
+  --accent:      #10b981;
+  --muted:       #64748b;
+  --muted-2:     #94a3b8;
+  --scanline-opacity: 0.03;
+}
+
+/* ── Reset & Base ───────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--bg);
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Thin custom scrollbar for overflow panels */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+}
+
+/* ── Component Utilities ────────────────────────────────────── */
+@layer components {
+
+  /* Glass panel — the core UI surface */
+  .glass {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(30, 41, 59, 0.8);
+    border-radius: 12px;
+  }
+
+  .glass-sm {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(30, 41, 59, 0.6);
+    border-radius: 8px;
+  }
+
+  /* Neon glow borders */
+  .border-glow-accent  { box-shadow: 0 0 0 1px var(--accent),  0 0 12px rgba(16,185,129,0.35); }
+  .border-glow-danger  { box-shadow: 0 0 0 1px var(--danger),  0 0 16px rgba(239,68,68,0.45); }
+  .border-glow-warning { box-shadow: 0 0 0 1px var(--warning), 0 0 12px rgba(245,158,11,0.35); }
+
+  /* Threat severity badges */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-semibold tracking-wider uppercase;
+  }
+  .badge-danger  { @apply badge bg-red-950/80 text-red-400 border border-red-800/60; }
+  .badge-warning { @apply badge bg-amber-950/80 text-amber-400 border border-amber-800/60; }
+  .badge-accent  { @apply badge bg-emerald-950/80 text-emerald-400 border border-emerald-800/60; }
+  .badge-muted   { @apply badge bg-slate-800/80 text-slate-400 border border-slate-700/60; }
+
+  /* HUD text styles */
+  .hud-label {
+    @apply text-xs font-mono uppercase tracking-widest text-slate-500;
+  }
+  .hud-value {
+    @apply text-sm font-mono font-semibold text-slate-200;
+  }
+
+  /* Pulsing live indicator dot */
+  .live-dot {
+    @apply w-2 h-2 rounded-full bg-red-500;
+    animation: pulse-danger 1.2s ease-in-out infinite;
+  }
+  .active-dot {
+    @apply w-2 h-2 rounded-full bg-emerald-400;
+    animation: pulse-neon 2s ease-in-out infinite;
+  }
+
+  /* CRT scanline overlay — applied on the camera canvas wrapper */
+  .scanlines::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, var(--scanline-opacity)) 2px,
+      rgba(0, 0, 0, var(--scanline-opacity)) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Radar corner brackets for the camera HUD frame */
+  .hud-frame {
+    position: relative;
+  }
+  .hud-frame::before,
+  .hud-frame::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--accent);
+    border-style: solid;
+    opacity: 0.7;
+    z-index: 20;
+  }
+  .hud-frame::before {
+    top: 0; left: 0;
+    border-width: 2px 0 0 2px;
+    border-radius: 4px 0 0 0;
+  }
+  .hud-frame::after {
+    bottom: 0; right: 0;
+    border-width: 0 2px 2px 0;
+    border-radius: 0 0 4px 0;
+  }
+
+  /* Threat alert overlay (flashes red during incident) */
+  .threat-flash {
+    animation: threat-flash 0.6s ease-in-out 3;
+  }
+
+  /* Button base */
+  .btn {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
+           transition-all duration-200 cursor-pointer select-none;
+  }
+  .btn-ghost {
+    @apply btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/60;
+  }
+  .btn-danger {
+    @apply btn bg-red-950/60 text-red-400 border border-red-800/50
+           hover:bg-red-900/60 hover:text-red-300 hover:border-red-700;
+  }
+  .btn-accent {
+    @apply btn bg-emerald-950/60 text-emerald-400 border border-emerald-800/50
+           hover:bg-emerald-900/60 hover:text-emerald-300;
+  }
+}
+
+/* ── Custom Keyframes ───────────────────────────────────────── */
+@layer utilities {
+  @keyframes pulse-neon {
+    0%, 100% { opacity: 1;   box-shadow: 0 0 8px 1px rgba(16,185,129,0.4); }
+    50%       { opacity: 0.7; box-shadow: 0 0 20px 4px rgba(16,185,129,0.7); }
+  }
+  @keyframes pulse-danger {
+    0%, 100% { opacity: 1;   box-shadow: 0 0 8px 1px rgba(239,68,68,0.4); }
+    50%       { opacity: 0.8; box-shadow: 0 0 24px 6px rgba(239,68,68,0.75); }
+  }
+  @keyframes radar-sweep {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes slide-in-right {
+    from { transform: translateX(110%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+  @keyframes threat-flash {
+    0%, 100% { background: transparent; }
+    50%       { background: rgba(239,68,68,0.08); }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to   { background-position:  200% 0; }
+  }
+
+  .animate-radar-sweep    { animation: radar-sweep 4s linear infinite; }
+  .animate-pulse-neon     { animation: pulse-neon 2s ease-in-out infinite; }
+  .animate-pulse-danger   { animation: pulse-danger 1.2s ease-in-out infinite; }
+  .animate-slide-in-right { animation: slide-in-right 0.35s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-fade-in        { animation: fade-in 0.2s ease-out both; }
+  .animate-blink          { animation: blink 1s step-start infinite; }
+}
