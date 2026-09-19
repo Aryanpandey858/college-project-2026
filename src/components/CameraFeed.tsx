@@ -672,20 +672,32 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
 
   if (cameraError) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-slate-950/80 gap-4">
-        <div className="w-14 h-14 rounded-full bg-red-950/40 border border-red-800/40 flex items-center justify-center">
-          <CameraOff size={24} className="text-red-400" />
+      <div
+        className="flex-1 flex flex-col items-center justify-center gap-4"
+        style={{ background: 'var(--bg)' }}
+      >
+        <div
+          className="flex items-center justify-center"
+          style={{
+            width: 52, height: 52, borderRadius: '50%',
+            background: 'rgba(248, 81, 73, 0.08)',
+            border: '1px solid rgba(248, 81, 73, 0.25)',
+          }}
+        >
+          <CameraOff size={22} style={{ color: 'var(--danger)' }} />
         </div>
-        <div className="text-center space-y-1.5">
-          <p className="text-sm font-semibold text-red-400">Camera Unavailable</p>
-          <p className="text-xs font-mono text-slate-500 max-w-xs">{cameraError}</p>
+        <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--danger)' }}>Camera Unavailable</p>
+          <p style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-muted)', maxWidth: 280, lineHeight: 1.5 }}>
+            {cameraError}
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative flex-1 bg-black overflow-hidden hud-frame scanlines">
+    <div className="relative flex-1 bg-black overflow-hidden" style={{ contain: 'strict' }}>
       {/* Hidden video element — AI reads frames from here */}
       <video
         ref={videoRef}
@@ -705,11 +717,14 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
 
       {/* Loading overlay — shown while camera/models initialize */}
       {!cameraReady && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 gap-4 z-20">
-          <Loader2 size={32} className="text-emerald-400 animate-spin" />
-          <div className="text-center space-y-1">
-            <p className="text-sm font-semibold text-slate-200">Initializing Camera</p>
-            <p className="text-xs font-mono text-slate-500">
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-20"
+          style={{ background: 'rgba(13, 17, 23, 0.92)' }}
+        >
+          <Loader2 size={28} className="animate-spin" style={{ color: 'var(--accent)' }} />
+          <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Initializing Camera</p>
+            <p style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-muted)' }}>
               {modelsLoaded ? 'AI models ready — starting feed...' : 'Loading AI models (WebGL)...'}
             </p>
           </div>
@@ -718,15 +733,27 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
 
       {/* Models loading indicator (camera up but models still loading) */}
       {cameraReady && !modelsLoaded && (
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm border border-slate-700/60 rounded-full px-4 py-2">
-          <Loader2 size={12} className="text-emerald-400 animate-spin" />
-          <span className="text-xs font-mono text-slate-300">Loading AI models…</span>
+        <div
+          className="absolute top-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded-full px-4 py-2"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border-2)',
+          }}
+        >
+          <Loader2 size={12} className="animate-spin" style={{ color: 'var(--accent)' }} />
+          <span style={{ fontSize: 12, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-secondary)' }}>Loading AI models…</span>
         </div>
       )}
 
-      {/* Threat alert flash border */}
+      {/* Threat alert border — flat colored div, opacity-only animation (no box-shadow) */}
       {activeThreat && (
-        <div className="absolute inset-0 border-4 border-red-500/80 rounded-none pointer-events-none z-10 animate-pulse-danger" />
+        <div
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            border: '3px solid var(--danger)',
+            animation: 'blink-dot 0.7s ease-in-out infinite',
+          }}
+        />
       )}
     </div>
   );

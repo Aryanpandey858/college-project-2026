@@ -96,17 +96,15 @@ export default function SurveillancePage() {
         systemOnline={aiStats.modelsLoaded}
       />
 
-      {/* ── Telemetry bar ────────────────────────── */}
-      <div className="flex items-center justify-center px-4 py-2 bg-background border-b border-slate-800/40">
-        <ThreatStats
-          fps={aiStats.fps}
-          inferenceMs={aiStats.inferenceMs}
-          personCount={aiStats.personCount}
-          vehicleCount={aiStats.vehicleCount}
-          activeThreat={aiStats.activeThreat}
-          modelsLoaded={aiStats.modelsLoaded}
-        />
-      </div>
+      {/* ── Telemetry bar ─────────────────────── */}
+      <ThreatStats
+        fps={aiStats.fps}
+        inferenceMs={aiStats.inferenceMs}
+        personCount={aiStats.personCount}
+        vehicleCount={aiStats.vehicleCount}
+        activeThreat={aiStats.activeThreat}
+        modelsLoaded={aiStats.modelsLoaded}
+      />
 
       {/* ── Main content: camera + drawer ────────── */}
       <div className="flex flex-1 overflow-hidden">

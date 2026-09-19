@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Bell, BellOff, Mail, Radio, Shield, Wifi, WifiOff } from 'lucide-react';
+import { Bell, BellOff, Mail, Shield, Wifi, WifiOff } from 'lucide-react';
 
 export interface AlertHeaderProps {
   recipientEmail: string;
@@ -58,22 +58,25 @@ export default function AlertHeader({
   }
 
   return (
-    <header className="glass border-b border-slate-800/60 flex items-center justify-between px-4 py-2.5 gap-4 z-30 relative rounded-none">
+    <header
+      className="flex items-center justify-between px-4 py-2.5 gap-4 z-30 relative shrink-0"
+      style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
+    >
 
       {/* ── Brand ────────────────────────────── */}
-      <div className="flex items-center gap-3 shrink-0">
-        {/* Radar icon with sweep animation */}
-        <div className="relative w-8 h-8 flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-emerald-500/30" />
-          <div
-            className="absolute inset-0 rounded-full border-t-2 border-emerald-400/70"
-            style={{ animation: 'radar-sweep 3s linear infinite' }}
-          />
-          <Shield size={14} className="text-emerald-400 relative z-10" />
+      <div className="flex items-center gap-2.5 shrink-0">
+        {/* Simple static shield — no spinning animation */}
+        <div
+          className="w-7 h-7 flex items-center justify-center rounded-md"
+          style={{ background: 'rgba(63, 185, 80, 0.1)', border: '1px solid rgba(63, 185, 80, 0.25)' }}
+        >
+          <Shield size={14} style={{ color: 'var(--accent)' }} />
         </div>
-        <div className="flex flex-col leading-none">
-          <span className="text-sm font-bold text-slate-100 tracking-tight">SentinelAI</span>
-          <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500">
+        <div className="flex flex-col leading-none gap-0.5">
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+            SentinelAI
+          </span>
+          <span className="hud-label" style={{ fontSize: '9px' }}>
             Surveillance Platform
           </span>
         </div>
@@ -81,7 +84,7 @@ export default function AlertHeader({
 
       {/* ── Center: Email recipient input ─────── */}
       <div className="flex items-center gap-2 flex-1 max-w-sm">
-        <Mail size={13} className="text-slate-500 shrink-0" />
+        <Mail size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
         <div className="relative flex-1">
           <input
             ref={inputRef}
@@ -93,22 +96,33 @@ export default function AlertHeader({
             onBlur={() => { setEmailFocused(false); handleEmailSubmit(); }}
             onKeyDown={handleKeyDown}
             placeholder="alert-recipient@example.com"
-            className={`
-              w-full bg-slate-900/60 border rounded-lg px-3 py-1.5
-              text-sm font-mono text-slate-200 placeholder-slate-600
-              outline-none transition-all duration-200
-              ${emailFocused
-                ? 'border-emerald-500/60 shadow-[0_0_0_1px_rgba(16,185,129,0.3)]'
-                : 'border-slate-700/60 hover:border-slate-600/60'}
-            `}
+            style={{
+              width: '100%',
+              background: 'var(--bg)',
+              border: `1px solid ${emailFocused ? 'var(--accent)' : 'var(--border-2)'}`,
+              borderRadius: '6px',
+              padding: '5px 10px',
+              fontSize: '13px',
+              fontFamily: '"JetBrains Mono", monospace',
+              color: 'var(--text-primary)',
+              outline: 'none',
+              transition: 'border-color 0.12s',
+            }}
           />
           {saved && (
-            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-emerald-400 animate-fade-in">
-              SAVED ✓
+            <span
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-fade-in"
+              style={{ fontSize: '10px', fontFamily: '"JetBrains Mono", monospace', color: 'var(--accent)' }}
+            >
+              Saved ✓
             </span>
           )}
         </div>
-        <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest whitespace-nowrap hidden md:block">
+        <span
+          className="hidden md:block"
+          style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: '"JetBrains Mono", monospace',
+                   textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}
+        >
           Alert Recipient
         </span>
       </div>
@@ -120,25 +134,29 @@ export default function AlertHeader({
         <div className="flex items-center gap-1.5">
           {cameraActive ? (
             <>
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500" style={{ animation: 'pulse-danger 1.2s ease-in-out infinite' }} />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-red-400">LIVE</span>
+              <span className="live-dot" />
+              <span className="hud-label" style={{ color: 'var(--danger)' }}>Live</span>
             </>
           ) : (
             <>
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">OFFLINE</span>
+              <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: 'var(--text-muted)' }} />
+              <span className="hud-label">Offline</span>
             </>
           )}
         </div>
 
-        <div className="w-px h-5 bg-slate-700/60" />
+        {/* Divider */}
+        <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--border-2)' }} />
 
-        {/* System online indicator */}
-        <div className="flex items-center gap-1.5" title={systemOnline ? 'AI systems online' : 'AI systems offline'}>
+        {/* AI system status */}
+        <div
+          className="flex items-center gap-1.5"
+          title={systemOnline ? 'AI models ready' : 'AI models loading'}
+        >
           {systemOnline ? (
-            <Wifi size={13} className="text-emerald-400" />
+            <Wifi size={13} style={{ color: 'var(--accent)' }} />
           ) : (
-            <WifiOff size={13} className="text-slate-600" />
+            <WifiOff size={13} style={{ color: 'var(--text-muted)' }} />
           )}
         </div>
 
@@ -146,18 +164,26 @@ export default function AlertHeader({
         <button
           id="audio-toggle-btn"
           onClick={onAudioToggle}
-          className={`btn-ghost p-1.5 rounded-lg transition-all ${audioEnabled ? 'text-emerald-400' : 'text-slate-600'}`}
+          className="btn-ghost"
+          style={{
+            padding: '5px',
+            borderRadius: '6px',
+            color: audioEnabled ? 'var(--accent)' : 'var(--text-muted)',
+          }}
           title={audioEnabled ? 'Mute alerts' : 'Enable audio alerts'}
           aria-label="Toggle audio alerts"
         >
           {audioEnabled ? <Bell size={14} /> : <BellOff size={14} />}
         </button>
 
-        {/* Version tag */}
-        <div className="hidden lg:flex items-center gap-1 px-2 py-1 bg-slate-800/50 rounded-md border border-slate-700/40">
-          <Radio size={10} className="text-slate-500" />
-          <span className="text-[9px] font-mono text-slate-500 tracking-widest">v1.0</span>
-        </div>
+        {/* Version — simple text, no border */}
+        <span
+          className="hidden lg:inline"
+          style={{ fontSize: '10px', fontFamily: '"JetBrains Mono", monospace',
+                   color: 'var(--text-muted)', letterSpacing: '0.05em' }}
+        >
+          v1.0
+        </span>
       </div>
     </header>
   );

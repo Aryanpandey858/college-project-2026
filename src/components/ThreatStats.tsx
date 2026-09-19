@@ -13,9 +13,9 @@ export interface ThreatStatsProps {
 }
 
 const THREAT_LABELS: Record<string, { label: string; color: string }> = {
-  COMBAT:   { label: 'COMBAT DETECTED',   color: 'text-red-400' },
-  WEAPON:   { label: 'WEAPON DETECTED',   color: 'text-amber-400' },
-  ACCIDENT: { label: 'COLLISION DETECTED', color: 'text-orange-400' },
+  COMBAT:   { label: 'Combat Detected',   color: 'var(--danger)' },
+  WEAPON:   { label: 'Weapon Detected',   color: 'var(--warning)' },
+  ACCIDENT: { label: 'Collision Detected', color: 'var(--warning)' },
 };
 
 export default function ThreatStats({
@@ -27,32 +27,39 @@ export default function ThreatStats({
   modelsLoaded,
 }: ThreatStatsProps) {
   const fpsColor =
-    fps >= 12 ? 'text-emerald-400' :
-    fps >= 7  ? 'text-amber-400'   :
-                'text-red-400';
+    fps >= 12 ? 'var(--accent)' :
+    fps >= 7  ? 'var(--warning)' :
+                'var(--danger)';
 
   const latencyColor =
-    inferenceMs < 60  ? 'text-emerald-400' :
-    inferenceMs < 120 ? 'text-amber-400'   :
-                        'text-red-400';
+    inferenceMs < 60  ? 'var(--accent)' :
+    inferenceMs < 120 ? 'var(--warning)' :
+                        'var(--danger)';
 
   return (
-    <div className="glass border border-slate-800/60 flex items-center gap-0 overflow-hidden">
+    <div
+      className="flex items-center"
+      style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
+    >
 
       {/* Model status */}
-      <StatCell icon={<Cpu size={13} />} label="MODEL">
+      <StatCell icon={<Cpu size={12} />} label="Model">
         {modelsLoaded ? (
-          <span className="text-emerald-400 font-mono text-xs font-semibold tracking-wider">READY</span>
+          <span style={{ color: 'var(--accent)', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, fontWeight: 600 }}>
+            Ready
+          </span>
         ) : (
-          <span className="text-amber-400 font-mono text-xs font-semibold tracking-wider animate-pulse">LOADING</span>
+          <span className="animate-pulse" style={{ color: 'var(--warning)', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, fontWeight: 600 }}>
+            Loading
+          </span>
         )}
       </StatCell>
 
       <Divider />
 
       {/* FPS */}
-      <StatCell icon={<Activity size={13} />} label="FPS">
-        <span className={`font-mono text-sm font-bold tabular-nums ${fpsColor}`}>
+      <StatCell icon={<Activity size={12} />} label="FPS">
+        <span style={{ color: fpsColor, fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
           {fps.toFixed(0)}
         </span>
       </StatCell>
@@ -60,8 +67,8 @@ export default function ThreatStats({
       <Divider />
 
       {/* Inference latency */}
-      <StatCell icon={<Zap size={13} />} label="LATENCY">
-        <span className={`font-mono text-sm font-bold tabular-nums ${latencyColor}`}>
+      <StatCell icon={<Zap size={12} />} label="Latency">
+        <span style={{ color: latencyColor, fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
           {inferenceMs > 0 ? `${inferenceMs.toFixed(0)}ms` : '—'}
         </span>
       </StatCell>
@@ -69,8 +76,8 @@ export default function ThreatStats({
       <Divider />
 
       {/* Person count */}
-      <StatCell icon={<Users size={13} />} label="PERSONS">
-        <span className="font-mono text-sm font-bold text-slate-200 tabular-nums">
+      <StatCell icon={<Users size={12} />} label="Persons">
+        <span style={{ color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
           {personCount}
         </span>
       </StatCell>
@@ -78,19 +85,37 @@ export default function ThreatStats({
       <Divider />
 
       {/* Vehicle count */}
-      <StatCell icon={<Car size={13} />} label="VEHICLES">
-        <span className="font-mono text-sm font-bold text-slate-200 tabular-nums">
+      <StatCell icon={<Car size={12} />} label="Vehicles">
+        <span style={{ color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
           {vehicleCount}
         </span>
       </StatCell>
 
-      {/* Active threat banner — only shown when threat is active */}
+      {/* Active threat banner */}
       {activeThreat && (
         <>
           <Divider />
-          <div className="flex items-center gap-2 px-4 py-2 bg-red-950/40">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse-danger" />
-            <span className={`font-mono text-xs font-bold tracking-widest ${THREAT_LABELS[activeThreat].color}`}>
+          <div
+            className="flex items-center gap-2 px-4 py-2"
+            style={{ background: 'rgba(248, 81, 73, 0.08)' }}
+          >
+            {/* Static dot — no animation cost during threat */}
+            <span
+              style={{
+                display: 'inline-block', width: 7, height: 7,
+                borderRadius: '50%', background: 'var(--danger)',
+                animation: 'blink-dot 1.2s ease-in-out infinite',
+              }}
+            />
+            <span
+              style={{
+                fontFamily: '"JetBrains Mono", monospace',
+                fontSize: 11,
+                fontWeight: 700,
+                color: THREAT_LABELS[activeThreat].color,
+                letterSpacing: '0.04em',
+              }}
+            >
               ⚠ {THREAT_LABELS[activeThreat].label}
             </span>
           </div>
@@ -103,7 +128,9 @@ export default function ThreatStats({
 // ── Sub-components ────────────────────────────────────────────
 
 function Divider() {
-  return <div className="w-px self-stretch bg-slate-800/60" />;
+  return (
+    <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--border)' }} />
+  );
 }
 
 function StatCell({
@@ -116,10 +143,22 @@ function StatCell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-0.5 px-4 py-2 min-w-[72px]">
-      <div className="flex items-center gap-1 text-slate-600">
+    <div
+      className="flex flex-col items-center justify-center gap-0.5 px-4 py-2"
+      style={{ minWidth: 72 }}
+    >
+      <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
         {icon}
-        <span className="text-[9px] font-mono uppercase tracking-widest text-slate-600">
+        <span
+          style={{
+            fontSize: 9,
+            fontFamily: '"JetBrains Mono", monospace',
+            fontWeight: 500,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: 'var(--text-muted)',
+          }}
+        >
           {label}
         </span>
       </div>
@@ -127,3 +166,4 @@ function StatCell({
     </div>
   );
 }
+

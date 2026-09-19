@@ -65,28 +65,41 @@ export default function EvidenceModal({ incident, onClose }: EvidenceModalProps)
   }
 
   return (
-    /* Backdrop */
+    /* Backdrop — simple dark overlay, no backdrop-blur */
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      style={{ background: 'rgba(0, 0, 0, 0.75)' }}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Evidence Inspector"
     >
-      {/* Panel — stop click propagation */}
+      {/* Panel */}
       <div
-        className="glass relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-700/60 shadow-glass"
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--border-2)',
+          borderRadius: 10,
+          boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ───────────────────────────── */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/60">
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: '1px solid var(--border)' }}
+        >
           <div className="flex items-center gap-3">
-            <cfg.Icon size={16} className={incident.type === 'COMBAT' ? 'text-red-400' : 'text-amber-400'} />
+            <cfg.Icon size={16} style={{ color: incident.type === 'COMBAT' ? 'var(--danger)' : 'var(--warning)' }} />
             <div>
-              <h2 className="text-sm font-semibold text-slate-100">{incident.title}</h2>
-              <div className="flex items-center gap-2 mt-0.5">
+              <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{incident.title}</h2>
+              <div className="flex items-center gap-2 mt-1">
                 <span className={cfg.badgeClass}>{cfg.label}</span>
-                <span className="flex items-center gap-1 text-[10px] font-mono text-slate-500">
+                <span
+                  className="flex items-center gap-1"
+                  style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-muted)' }}
+                >
                   <Clock size={9} />
                   {formatTime(incident.created_at)}
                 </span>
@@ -96,7 +109,8 @@ export default function EvidenceModal({ incident, onClose }: EvidenceModalProps)
           <button
             id="evidence-modal-close"
             onClick={onClose}
-            className="btn-ghost p-1.5 rounded-lg"
+            className="btn-ghost"
+            style={{ padding: '6px', borderRadius: 6 }}
             aria-label="Close evidence inspector"
           >
             <X size={16} />
@@ -104,7 +118,10 @@ export default function EvidenceModal({ incident, onClose }: EvidenceModalProps)
         </div>
 
         {/* ── Snapshot ─────────────────────────── */}
-        <div className={`relative m-4 rounded-lg overflow-hidden border ${cfg.glowClass}`}>
+        <div
+          className={`relative m-4 rounded-lg overflow-hidden ${cfg.glowClass}`}
+          style={{ border: `1px solid ${incident.type === 'COMBAT' ? 'var(--danger)' : incident.type === 'CUSTOM' ? 'var(--border-2)' : 'var(--warning)'}` }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={incident.snapshot_url}
@@ -113,10 +130,13 @@ export default function EvidenceModal({ incident, onClose }: EvidenceModalProps)
             loading="eager"
           />
           {/* Overlay timestamp */}
-          <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded px-2 py-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse-danger" />
-            <span className="text-[9px] font-mono text-red-400 uppercase tracking-widest">REC</span>
-            <span className="text-[9px] font-mono text-slate-300">{formatTime(incident.created_at)}</span>
+          <div
+            className="absolute top-2 left-2 flex items-center gap-1.5 rounded px-2 py-1"
+            style={{ background: 'rgba(0,0,0,0.65)', borderRadius: 4 }}
+          >
+            <span className="live-dot" style={{ width: 6, height: 6 }} />
+            <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'var(--danger)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>REC</span>
+            <span style={{ fontSize: 9, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-secondary)' }}>{formatTime(incident.created_at)}</span>
           </div>
         </div>
 
@@ -124,34 +144,41 @@ export default function EvidenceModal({ incident, onClose }: EvidenceModalProps)
         <div className="grid grid-cols-2 gap-3 mx-4 mb-4">
 
           {/* Confidence */}
-          <MetaCard label="DETECTION CONFIDENCE">
-            <div className="space-y-1.5">
+          <MetaCard label="Detection Confidence">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div className="flex items-end justify-between">
-                <span className="text-xl font-mono font-bold text-slate-100">{confidence}%</span>
-                <span className={`text-xs font-mono ${confidence >= 80 ? 'text-red-400' : confidence >= 60 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                  {confidence >= 80 ? 'HIGH' : confidence >= 60 ? 'MEDIUM' : 'LOW'}
+                <span style={{ fontSize: 20, fontFamily: '"JetBrains Mono", monospace', fontWeight: 700, color: 'var(--text-primary)' }}>{confidence}%</span>
+                <span
+                  style={{
+                    fontSize: 11, fontFamily: '"JetBrains Mono", monospace',
+                    color: confidence >= 80 ? 'var(--danger)' : confidence >= 60 ? 'var(--warning)' : 'var(--accent)',
+                  }}
+                >
+                  {confidence >= 80 ? 'High' : confidence >= 60 ? 'Medium' : 'Low'}
                 </span>
               </div>
-              <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div style={{ height: 4, background: 'var(--bg)', borderRadius: 2, overflow: 'hidden' }}>
                 <div
-                  className={`h-full rounded-full transition-all ${
-                    confidence >= 80 ? 'bg-red-500' : confidence >= 60 ? 'bg-amber-500' : 'bg-emerald-500'
-                  }`}
-                  style={{ width: `${confidence}%` }}
+                  style={{
+                    height: '100%', borderRadius: 2,
+                    width: `${confidence}%`,
+                    background: confidence >= 80 ? 'var(--danger)' : confidence >= 60 ? 'var(--warning)' : 'var(--accent)',
+                    transition: 'width 0.3s ease',
+                  }}
                 />
               </div>
             </div>
           </MetaCard>
 
           {/* Incident ID */}
-          <MetaCard label="INCIDENT ID">
-            <span className="text-xs font-mono text-slate-300 break-all">{incident.id}</span>
+          <MetaCard label="Incident ID">
+            <span style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{incident.id}</span>
           </MetaCard>
 
           {/* Description */}
           <div className="col-span-2">
-            <MetaCard label="DETECTION DETAILS">
-              <p className="text-xs font-mono text-slate-400 leading-relaxed">{incident.description}</p>
+            <MetaCard label="Detection Details">
+              <p style={{ fontSize: 11, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{incident.description}</p>
             </MetaCard>
           </div>
         </div>
@@ -171,7 +198,8 @@ export default function EvidenceModal({ incident, onClose }: EvidenceModalProps)
           <button
             id="evidence-copy-link-btn"
             onClick={copyLink}
-            className="btn-ghost border border-slate-700/60"
+            className="btn-ghost"
+            style={{ border: '1px solid var(--border-2)' }}
             title="Copy live viewer link"
           >
             <Copy size={13} />
@@ -187,7 +215,17 @@ export default function EvidenceModal({ incident, onClose }: EvidenceModalProps)
 
 function MetaCard({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-slate-900/50 border border-slate-800/60 rounded-lg p-3 space-y-1.5">
+    <div
+      style={{
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border)',
+        borderRadius: 6,
+        padding: '10px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+      }}
+    >
       <span className="hud-label">{label}</span>
       <div>{children}</div>
     </div>

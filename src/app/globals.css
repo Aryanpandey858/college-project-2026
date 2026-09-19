@@ -1,6 +1,7 @@
 /* ============================================================
-   globals.css — AI Surveillance Platform Global Styles
-   Tailwind directives + CRT scanlines + HUD neon utilities
+   globals.css — SentinelAI Surveillance Platform
+   Performance-first design: flat surfaces, minimal transitions,
+   no backdrop-filter, no continuous glow animations.
    ============================================================ */
 
 @tailwind base;
@@ -8,21 +9,26 @@
 @tailwind utilities;
 
 /* ── Google Fonts ──────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ── CSS Custom Properties ─────────────────────────────────── */
 :root {
-  --bg:          #090d16;
-  --surface:     #0f172a;
-  --surface-2:   #111827;
-  --border:      #1e293b;
-  --border-2:    #334155;
-  --danger:      #ef4444;
-  --warning:     #f59e0b;
-  --accent:      #10b981;
-  --muted:       #64748b;
-  --muted-2:     #94a3b8;
-  --scanline-opacity: 0.03;
+  /* Core surfaces — GitHub dark-inspired, easy on eyes */
+  --bg:        #0d1117;
+  --surface:   #161b22;
+  --surface-2: #1c2230;
+  --border:    #21262d;
+  --border-2:  #30363d;
+
+  /* Semantic status colors */
+  --danger:    #f85149;
+  --warning:   #e3b341;
+  --accent:    #3fb950;
+
+  /* Text hierarchy */
+  --text-primary:   #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted:     #484f58;
 }
 
 /* ── Reset & Base ───────────────────────────────────────────── */
@@ -38,175 +44,199 @@
     width: 100%;
     overflow: hidden;
     background-color: var(--bg);
-    color: #e2e8f0;
+    color: var(--text-primary);
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
-  /* Thin custom scrollbar for overflow panels */
+  /* Thin custom scrollbar */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 }
 
-/* ── Component Utilities ────────────────────────────────────── */
+/* ── Component Layer ────────────────────────────────────────── */
 @layer components {
 
-  /* Glass panel — the core UI surface */
+  /* ── Panels — flat, no blur ── */
   .glass {
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(30, 41, 59, 0.8);
-    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0;
   }
 
   .glass-sm {
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(30, 41, 59, 0.6);
-    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
   }
 
-  /* Neon glow borders */
-  .border-glow-accent  { box-shadow: 0 0 0 1px var(--accent),  0 0 12px rgba(16,185,129,0.35); }
-  .border-glow-danger  { box-shadow: 0 0 0 1px var(--danger),  0 0 16px rgba(239,68,68,0.45); }
-  .border-glow-warning { box-shadow: 0 0 0 1px var(--warning), 0 0 12px rgba(245,158,11,0.35); }
+  /* ── Simplified border indicators (no glow) ── */
+  .border-glow-accent  { border: 1px solid var(--accent); }
+  .border-glow-danger  { border: 1px solid var(--danger); }
+  .border-glow-warning { border: 1px solid var(--warning); }
 
-  /* Threat severity badges */
-  .badge {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-semibold tracking-wider uppercase;
-  }
-  .badge-danger  { @apply badge bg-red-950/80 text-red-400 border border-red-800/60; }
-  .badge-warning { @apply badge bg-amber-950/80 text-amber-400 border border-amber-800/60; }
-  .badge-accent  { @apply badge bg-emerald-950/80 text-emerald-400 border border-emerald-800/60; }
-  .badge-muted   { @apply badge bg-slate-800/80 text-slate-400 border border-slate-700/60; }
-
-  /* HUD text styles */
-  .hud-label {
-    @apply text-xs font-mono uppercase tracking-widest text-slate-500;
-  }
-  .hud-value {
-    @apply text-sm font-mono font-semibold text-slate-200;
-  }
-
-  /* Pulsing live indicator dot */
+  /* ── Status dots ── */
+  /* Live recording dot — opacity blink only, compositor-friendly */
   .live-dot {
-    @apply w-2 h-2 rounded-full bg-red-500;
-    animation: pulse-danger 1.2s ease-in-out infinite;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--danger);
+    animation: blink-dot 1.4s ease-in-out infinite;
   }
+
+  /* Active/online — static green dot, no animation */
   .active-dot {
-    @apply w-2 h-2 rounded-full bg-emerald-400;
-    animation: pulse-neon 2s ease-in-out infinite;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
   }
 
-  /* CRT scanline overlay — applied on the camera canvas wrapper */
-  .scanlines::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, var(--scanline-opacity)) 2px,
-      rgba(0, 0, 0, var(--scanline-opacity)) 4px
-    );
-    pointer-events: none;
-    z-index: 10;
+  /* ── Badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.6;
+    border: 1px solid transparent;
   }
 
-  /* Radar corner brackets for the camera HUD frame */
-  .hud-frame {
-    position: relative;
+  .badge-danger  {
+    background: rgba(248, 81, 73, 0.12);
+    color: var(--danger);
+    border-color: rgba(248, 81, 73, 0.3);
   }
-  .hud-frame::before,
-  .hud-frame::after {
-    content: '';
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-color: var(--accent);
-    border-style: solid;
-    opacity: 0.7;
-    z-index: 20;
+  .badge-warning {
+    background: rgba(227, 179, 65, 0.1);
+    color: var(--warning);
+    border-color: rgba(227, 179, 65, 0.3);
   }
-  .hud-frame::before {
-    top: 0; left: 0;
-    border-width: 2px 0 0 2px;
-    border-radius: 4px 0 0 0;
+  .badge-accent {
+    background: rgba(63, 185, 80, 0.1);
+    color: var(--accent);
+    border-color: rgba(63, 185, 80, 0.3);
   }
-  .hud-frame::after {
-    bottom: 0; right: 0;
-    border-width: 0 2px 2px 0;
-    border-radius: 0 0 4px 0;
+  .badge-muted {
+    background: rgba(139, 148, 158, 0.08);
+    color: var(--text-secondary);
+    border-color: var(--border-2);
   }
 
-  /* Threat alert overlay (flashes red during incident) */
-  .threat-flash {
-    animation: threat-flash 0.6s ease-in-out 3;
+  /* ── Label hierarchy ── */
+  .hud-label {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
-  /* Button base */
+  .hud-value {
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* ── Buttons ── */
   .btn {
-    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
-           transition-all duration-200 cursor-pointer select-none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    line-height: 1;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
   }
+
   .btn-ghost {
-    @apply btn text-slate-400 hover:text-slate-200 hover:bg-slate-800/60;
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: transparent;
   }
+  .btn-ghost:hover {
+    background: var(--surface-2);
+    color: var(--text-primary);
+  }
+
   .btn-danger {
-    @apply btn bg-red-950/60 text-red-400 border border-red-800/50
-           hover:bg-red-900/60 hover:text-red-300 hover:border-red-700;
+    background: rgba(248, 81, 73, 0.1);
+    color: var(--danger);
+    border-color: rgba(248, 81, 73, 0.3);
   }
+  .btn-danger:hover {
+    background: rgba(248, 81, 73, 0.18);
+  }
+
   .btn-accent {
-    @apply btn bg-emerald-950/60 text-emerald-400 border border-emerald-800/50
-           hover:bg-emerald-900/60 hover:text-emerald-300;
+    background: rgba(63, 185, 80, 0.1);
+    color: var(--accent);
+    border-color: rgba(63, 185, 80, 0.3);
+  }
+  .btn-accent:hover {
+    background: rgba(63, 185, 80, 0.18);
+  }
+
+  /* Threat flash on camera — opacity on a flat colored div (no box-shadow) */
+  .threat-flash {
+    animation: threat-border-pulse 0.65s ease-in-out 3;
   }
 }
 
-/* ── Custom Keyframes ───────────────────────────────────────── */
+/* ── Keyframes ──────────────────────────────────────────────── */
 @layer utilities {
-  @keyframes pulse-neon {
-    0%, 100% { opacity: 1;   box-shadow: 0 0 8px 1px rgba(16,185,129,0.4); }
-    50%       { opacity: 0.7; box-shadow: 0 0 20px 4px rgba(16,185,129,0.7); }
-  }
-  @keyframes pulse-danger {
-    0%, 100% { opacity: 1;   box-shadow: 0 0 8px 1px rgba(239,68,68,0.4); }
-    50%       { opacity: 0.8; box-shadow: 0 0 24px 6px rgba(239,68,68,0.75); }
-  }
-  @keyframes radar-sweep {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-  @keyframes slide-in-right {
-    from { transform: translateX(110%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
-  }
-  @keyframes fade-in {
-    from { opacity: 0; transform: scale(0.97); }
-    to   { opacity: 1; transform: scale(1); }
-  }
-  @keyframes blink {
+
+  /* Opacity-only blink — GPU compositor, no repaint */
+  @keyframes blink-dot {
     0%, 100% { opacity: 1; }
-    50%       { opacity: 0; }
-  }
-  @keyframes threat-flash {
-    0%, 100% { background: transparent; }
-    50%       { background: rgba(239,68,68,0.08); }
-  }
-  @keyframes shimmer {
-    from { background-position: -200% 0; }
-    to   { background-position:  200% 0; }
+    50%       { opacity: 0.2; }
   }
 
-  .animate-radar-sweep    { animation: radar-sweep 4s linear infinite; }
-  .animate-pulse-neon     { animation: pulse-neon 2s ease-in-out infinite; }
-  .animate-pulse-danger   { animation: pulse-danger 1.2s ease-in-out infinite; }
-  .animate-slide-in-right { animation: slide-in-right 0.35s cubic-bezier(0.16,1,0.3,1) both; }
-  .animate-fade-in        { animation: fade-in 0.2s ease-out both; }
-  .animate-blink          { animation: blink 1s step-start infinite; }
+  /* Slide-in for incident cards — transform + opacity, compositor-friendly */
+  @keyframes slide-in-right {
+    from { transform: translateX(20px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  /* Fade-in for modals */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Threat border flash — opacity only, no box-shadow change */
+  @keyframes threat-border-pulse {
+    0%, 100% { opacity: 0; }
+    50%       { opacity: 1; }
+  }
+
+  .animate-slide-in-right { animation: slide-in-right 0.22s ease-out both; }
+  .animate-fade-in        { animation: fade-in 0.16s ease-out both; }
+  .animate-blink-dot      { animation: blink-dot 1.4s ease-in-out infinite; }
+
+  /* Legacy aliases — kept so existing Tailwind classes in components still compile */
+  .animate-pulse-neon   { animation: blink-dot 2s ease-in-out infinite; }
+  .animate-pulse-danger { animation: blink-dot 1.2s ease-in-out infinite; }
+  .animate-blink        { animation: blink-dot 1s step-start infinite; }
 }

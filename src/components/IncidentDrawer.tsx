@@ -91,31 +91,60 @@ export default function IncidentDrawer() {
 
   return (
     <>
-      <aside className="glass border-l border-slate-800/60 flex flex-col h-full w-72 xl:w-80 shrink-0 rounded-none">
+      <aside
+        className="flex flex-col h-full w-72 xl:w-80 shrink-0"
+        style={{ background: 'var(--surface)', borderLeft: '1px solid var(--border)' }}
+      >
 
         {/* ── Header ────────────────────────────── */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/60">
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ borderBottom: '1px solid var(--border)' }}
+        >
           <div className="flex items-center gap-2">
-            <span className="hud-label">Incident Log</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              Incident Log
+            </span>
             {incidents.length > 0 && (
-              <span className="px-1.5 py-0.5 bg-red-950/60 text-red-400 border border-red-800/40 rounded text-[10px] font-mono font-semibold">
+              <span
+                style={{
+                  fontSize: 10, fontFamily: '"JetBrains Mono", monospace', fontWeight: 600,
+                  background: 'rgba(248, 81, 73, 0.12)', color: 'var(--danger)',
+                  border: '1px solid rgba(248, 81, 73, 0.25)',
+                  borderRadius: 4, padding: '0px 5px',
+                }}
+              >
                 {incidents.length}
               </span>
             )}
           </div>
+
           {/* Realtime status */}
-          <div className="flex items-center gap-1.5" title={realtimeConnected ? 'Realtime connected' : 'Connecting...'}>
+          <div
+            className="flex items-center gap-1.5"
+            title={realtimeConnected ? 'Realtime connected' : 'Connecting...'}
+          >
             <span
-              className={`w-1.5 h-1.5 rounded-full ${realtimeConnected ? 'bg-emerald-400 animate-pulse-neon' : 'bg-slate-600 animate-pulse'}`}
+              style={{
+                display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                background: realtimeConnected ? 'var(--accent)' : 'var(--text-muted)',
+                animation: realtimeConnected ? 'blink-dot 2s ease-in-out infinite' : undefined,
+              }}
             />
-            <span className={`text-[9px] font-mono uppercase tracking-widest ${realtimeConnected ? 'text-emerald-500' : 'text-slate-600'}`}>
-              {realtimeConnected ? 'LIVE' : 'SYNC'}
+            <span
+              style={{
+                fontSize: 10, fontFamily: '"JetBrains Mono", monospace',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                color: realtimeConnected ? 'var(--accent)' : 'var(--text-muted)',
+              }}
+            >
+              {realtimeConnected ? 'Live' : 'Sync'}
             </span>
           </div>
         </div>
 
         {/* ── Incident list ─────────────────────── */}
-        <div ref={listRef} className="flex-1 overflow-y-auto space-y-0 divide-y divide-slate-800/40">
+        <div ref={listRef} className="flex-1 overflow-y-auto">
           {incidents.length === 0 ? (
             <EmptyState />
           ) : (
@@ -136,6 +165,7 @@ export default function IncidentDrawer() {
   );
 }
 
+
 // ── Sub-components ────────────────────────────────────────────
 
 function IncidentCard({
@@ -150,12 +180,27 @@ function IncidentCard({
 
   return (
     <button
-      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-slate-800/40 transition-colors text-left group animate-slide-in-right"
+      className="w-full flex items-start gap-3 px-4 py-3 text-left group animate-slide-in-right"
+      style={{
+        borderBottom: '1px solid var(--border)',
+        background: 'transparent',
+        transition: 'background 0.1s',
+        cursor: 'pointer',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-2)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       onClick={onClick}
       aria-label={`View evidence: ${incident.title}`}
     >
       {/* Snapshot thumbnail */}
-      <div className="w-14 h-10 rounded overflow-hidden shrink-0 bg-slate-800 border border-slate-700/60">
+      <div
+        className="shrink-0 overflow-hidden"
+        style={{
+          width: 54, height: 38, borderRadius: 4,
+          background: 'var(--bg)',
+          border: '1px solid var(--border-2)',
+        }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={incident.snapshot_url}
@@ -166,13 +211,28 @@ function IncidentCard({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 space-y-1">
+      <div className="flex-1 min-w-0" style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <div className="flex items-center gap-1.5">
           <span className={cfg.badgeClass}>{cfg.label}</span>
-          <span className="text-[10px] font-mono text-slate-600">{confidence}%</span>
+          <span
+            style={{
+              fontSize: 10, fontFamily: '"JetBrains Mono", monospace',
+              color: 'var(--text-muted)',
+            }}
+          >
+            {confidence}%
+          </span>
         </div>
-        <p className="text-xs text-slate-300 truncate font-medium">{incident.title}</p>
-        <div className="flex items-center gap-1 text-[10px] font-mono text-slate-600">
+        <p
+          className="truncate"
+          style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}
+        >
+          {incident.title}
+        </p>
+        <div
+          className="flex items-center gap-1"
+          style={{ fontSize: 10, fontFamily: '"JetBrains Mono", monospace', color: 'var(--text-muted)' }}
+        >
           <Clock size={8} />
           <span>{relativeTime(incident.created_at)}</span>
         </div>
@@ -180,8 +240,9 @@ function IncidentCard({
 
       {/* Arrow */}
       <ChevronRight
-        size={14}
-        className="text-slate-700 group-hover:text-slate-400 transition-colors shrink-0 mt-2"
+        size={13}
+        className="shrink-0"
+        style={{ color: 'var(--text-muted)', marginTop: 4, transition: 'color 0.1s' }}
       />
     </button>
   );
@@ -189,14 +250,28 @@ function IncidentCard({
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center h-full py-16 px-6 text-center space-y-3">
-      <div className="w-12 h-12 rounded-full bg-slate-800/60 flex items-center justify-center">
-        <Inbox size={20} className="text-slate-600" />
+    <div
+      className="flex flex-col items-center justify-center h-full py-16 px-6 text-center"
+      style={{ gap: 12 }}
+    >
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 40, height: 40, borderRadius: '50%',
+          background: 'var(--surface-2)', border: '1px solid var(--border-2)',
+        }}
+      >
+        <Inbox size={18} style={{ color: 'var(--text-muted)' }} />
       </div>
-      <div>
-        <p className="text-xs font-semibold text-slate-500">No incidents yet</p>
-        <p className="text-[10px] text-slate-700 mt-1 font-mono">
-          Monitoring active — alerts will appear here in real-time
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>No incidents yet</p>
+        <p
+          style={{
+            fontSize: 11, fontFamily: '"JetBrains Mono", monospace',
+            color: 'var(--text-muted)', lineHeight: 1.5,
+          }}
+        >
+          Monitoring active. Alerts will appear here in real-time.
         </p>
       </div>
     </div>

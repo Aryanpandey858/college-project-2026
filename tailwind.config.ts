@@ -19,21 +19,21 @@ const config: Config = {
     extend: {
       // ── Color Palette ──────────────────────────────────────────────────────
       colors: {
-        background: '#090d16',
-        surface:    '#0f172a',
-        'surface-2': '#111827',
-        border:     '#1e293b',
-        'border-2': '#334155',
+        background: '#0d1117',
+        surface:    '#161b22',
+        'surface-2': '#1c2230',
+        border:     '#21262d',
+        'border-2': '#30363d',
         // Threat severity
-        danger:  '#ef4444',
-        'danger-dim': '#7f1d1d',
-        warning: '#f59e0b',
-        'warning-dim': '#78350f',
-        accent:  '#10b981',
-        'accent-dim': '#064e3b',
-        // Muted text
-        muted:   '#64748b',
-        'muted-2': '#94a3b8',
+        danger:  '#f85149',
+        'danger-dim': '#490202',
+        warning: '#e3b341',
+        'warning-dim': '#3d2a02',
+        accent:  '#3fb950',
+        'accent-dim': '#033a0f',
+        // Text
+        muted:   '#8b949e',
+        'muted-2': '#484f58',
       },
 
       // ── Box-Shadow Glow Utilities ──────────────────────────────────────────
