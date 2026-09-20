@@ -17,15 +17,21 @@ export async function POST(request: NextRequest) {
       snapshotBase64,
       snapshotMimeType = 'image/jpeg',
       recipientEmail,
+      recipientEmails,
       metadata = {},
     } = body;
 
-    if (!type || !title || !description || !recipientEmail || !snapshotBase64) {
+    const configuredRecipients = recipientEmails?.length ? recipientEmails : recipientEmail ? [recipientEmail] : [];
+    const validRecipients = Array.from(new Set(configuredRecipients
+      .map((email) => email.trim())
+      .filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))));
+
+    if (!type || !title || !description || validRecipients.length === 0 || !snapshotBase64) {
       return NextResponse.json(
         {
           success: false,
           error:
-            'Missing required fields: type, title, description, recipientEmail, snapshotBase64',
+            'Missing required fields: type, title, valid recipient email, snapshotBase64',
         },
         { status: 400 }
       );
@@ -81,7 +87,7 @@ export async function POST(request: NextRequest) {
           description,
           confidence,
           snapshot_url: publicUrlData.publicUrl,
-          recipient_email: recipientEmail,
+          recipient_email: validRecipients[0],
           live_token: liveToken,
           metadata,
         },
@@ -101,7 +107,8 @@ export async function POST(request: NextRequest) {
 
     try {
       await sendIncidentAlertEmail({
-        recipientEmail,
+        recipientEmail: validRecipients[0],
+        recipientEmails: validRecipients,
         type,
         title,
         description,

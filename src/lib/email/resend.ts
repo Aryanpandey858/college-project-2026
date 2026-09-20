@@ -2,7 +2,8 @@
 import { Resend } from 'resend';
 
 type AlertEmailInput = {
-  recipientEmail: string;
+  recipientEmail?: string;
+  recipientEmails?: string[];
   type: string;
   title: string;
   description: string;
@@ -23,6 +24,7 @@ function formatTimestamp(value?: string): string {
 
 export async function sendIncidentAlertEmail({
   recipientEmail,
+  recipientEmails,
   type,
   title,
   description,
@@ -31,7 +33,9 @@ export async function sendIncidentAlertEmail({
   liveViewerUrl,
   createdAt,
 }: AlertEmailInput) {
-  if (!recipientEmail) {
+  const recipients = recipientEmails?.length ? recipientEmails : recipientEmail ? [recipientEmail] : [];
+
+  if (recipients.length === 0) {
     throw new Error('Recipient email is required');
   }
 
@@ -104,7 +108,7 @@ export async function sendIncidentAlertEmail({
 
   const response = await resend.emails.send({
     from: 'Alert System <alerts@yourdomain.com>',
-    to: recipientEmail,
+    to: recipients,
     subject: `🚨 ${title} | ${type}`,
     html: emailHtml,
   });

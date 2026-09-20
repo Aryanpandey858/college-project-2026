@@ -19,11 +19,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import AlertHeader from '@/components/AlertHeader';
 import CameraFeed from '@/components/CameraFeed';
+import RecipientPopover, { isValidRecipientEmail } from '@/components/RecipientPopover';
 import ThreatStats from '@/components/ThreatStats';
 import IncidentDrawer from '@/components/IncidentDrawer';
 import type { ThreatType } from '@/lib/types';
 
 const EMAIL_STORAGE_KEY = 'sentinel_recipient_email';
+const RECIPIENTS_STORAGE_KEY = 'sentinel_recipient_emails';
 const AUDIO_STORAGE_KEY = 'sentinel_audio_enabled';
 const THEME_STORAGE_KEY = 'sentinel_theme';
 const MAX_LOCAL_SNAPSHOTS = 50;
@@ -50,7 +52,7 @@ const DEFAULT_STATS: AIStats = {
 
 export default function SurveillancePage() {
   // ── Persistent preferences ───────────────────
-  const [recipientEmail, setRecipientEmail] = useState<string>('');
+  const [recipients, setRecipients] = useState<string[]>(['']);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [monitoringEnabled, setMonitoringEnabled] = useState(false);
@@ -61,10 +63,22 @@ export default function SurveillancePage() {
 
   // ── Load from localStorage on mount ─────────
   useEffect(() => {
+    const savedRecipients = localStorage.getItem(RECIPIENTS_STORAGE_KEY);
     const savedEmail = localStorage.getItem(EMAIL_STORAGE_KEY) ?? '';
     const savedAudio = localStorage.getItem(AUDIO_STORAGE_KEY);
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-    setRecipientEmail(savedEmail);
+    if (savedRecipients) {
+      try {
+        const parsed = JSON.parse(savedRecipients);
+        if (Array.isArray(parsed)) {
+          setRecipients(parsed.filter((value): value is string => typeof value === 'string'));
+        }
+      } catch {
+        setRecipients(savedEmail ? [savedEmail] : ['']);
+      }
+    } else {
+      setRecipients(savedEmail ? [savedEmail] : ['']);
+    }
     setAudioEnabled(savedAudio !== 'false');
     setTheme(savedTheme === 'light' ? 'light' : 'dark');
   }, []);
@@ -85,11 +99,15 @@ export default function SurveillancePage() {
     });
   }, []);
 
-  // ── Persist email on change ──────────────────
-  function handleEmailChange(email: string) {
-    setRecipientEmail(email);
-    localStorage.setItem(EMAIL_STORAGE_KEY, email);
+  // ── Persist recipients on change ─────────────
+  function handleRecipientsChange(nextRecipients: string[]) {
+    setRecipients(nextRecipients);
+    localStorage.setItem(RECIPIENTS_STORAGE_KEY, JSON.stringify(nextRecipients));
+    const firstValidRecipient = nextRecipients.find(isValidRecipientEmail) ?? '';
+    localStorage.setItem(EMAIL_STORAGE_KEY, firstValidRecipient);
   }
+
+  const validRecipients = recipients.filter(isValidRecipientEmail);
 
   // ── Toggle audio ─────────────────────────────
   function handleAudioToggle() {
@@ -112,8 +130,6 @@ export default function SurveillancePage() {
     >
       {/* ── Top bar ─────────────────────────────── */}
       <AlertHeader
-        recipientEmail={recipientEmail}
-        onEmailChange={handleEmailChange}
         audioEnabled={audioEnabled}
         onAudioToggle={handleAudioToggle}
         cameraActive={aiStats.cameraActive}
@@ -133,6 +149,10 @@ export default function SurveillancePage() {
         />
 
         <div className="console-toolbar" aria-label="Console preferences">
+          <RecipientPopover
+            recipients={recipients}
+            onRecipientsChange={handleRecipientsChange}
+          />
           <span className="console-toolbar-label">Console view</span>
           <button
             type="button"
@@ -151,7 +171,7 @@ export default function SurveillancePage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Camera feed occupies remaining space */}
         <CameraFeed
-          recipientEmail={recipientEmail}
+          recipientEmails={validRecipients}
           audioEnabled={audioEnabled}
           monitoringEnabled={monitoringEnabled}
           onMonitoringToggle={() => setMonitoringEnabled((previous) => !previous)}

@@ -141,8 +141,10 @@ export interface IncidentPayload {
   snapshotBase64: string;
   /** MIME type of the snapshot (default: image/jpeg) */
   snapshotMimeType?: 'image/jpeg' | 'image/png' | 'image/webp';
-  /** Alert destination email address (from operator UI) */
+  /** Legacy first alert destination email address */
   recipientEmail: string;
+  /** Validated alert destinations from the operator UI */
+  recipientEmails?: string[];
   /** Optional extra detection metadata to store in the DB */
   metadata?: Record<string, unknown>;
 }

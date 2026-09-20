@@ -270,7 +270,7 @@ function drawHUDOverlay(
 // ─────────────────────────────────────────────
 
 export interface CameraFeedProps {
-  recipientEmail: string;
+  recipientEmails: string[];
   audioEnabled: boolean;
   monitoringEnabled: boolean;
   onMonitoringToggle: () => void;
@@ -291,7 +291,7 @@ export interface CameraFeedProps {
 // ─────────────────────────────────────────────
 
 export default function CameraFeed({
-  recipientEmail,
+  recipientEmails,
   audioEnabled,
   monitoringEnabled,
   onMonitoringToggle,
@@ -353,7 +353,7 @@ export default function CameraFeed({
   ) => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
-    if (!canvas || !video || !recipientEmail) return;
+    if (!canvas || !video || recipientEmails.length === 0) return;
 
     const snapshotBase64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
     let localSnapshotDataUrl: string | null = null;
@@ -378,7 +378,8 @@ export default function CameraFeed({
       confidence,
       snapshotBase64,
       snapshotMimeType: 'image/jpeg',
-      recipientEmail,
+      recipientEmail: recipientEmails[0],
+      recipientEmails,
       metadata,
     };
 
@@ -398,7 +399,7 @@ export default function CameraFeed({
     } catch (err) {
       console.error('[CameraFeed] Incident report failed:', err);
     }
-  }, [onIncidentSnapshot, recipientEmail]);
+  }, [onIncidentSnapshot, recipientEmails]);
 
   // ── Main inference loop ──────────────────────
   const inferenceLoop = useCallback(async (timestamp: number) => {

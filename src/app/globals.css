@@ -268,6 +268,154 @@
     border-left: 1px solid var(--border);
   }
 
+  .recipient-popover-anchor {
+    position: relative;
+  }
+
+  .recipient-trigger,
+  .recipient-add,
+  .recipient-close,
+  .recipient-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid var(--border-2);
+    color: var(--text-secondary);
+    background: var(--surface);
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .recipient-trigger {
+    gap: 7px;
+    min-height: 32px;
+    padding: 7px 11px;
+    border-radius: 6px;
+    font: 500 12px/1 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+
+  .recipient-trigger:hover,
+  .recipient-add:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--success-bg);
+  }
+
+  .recipient-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 50;
+    width: min(360px, calc(100vw - 24px));
+    padding: 14px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+  }
+
+  .recipient-popover-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .recipient-popover-title {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .recipient-popover-note {
+    margin-top: 3px;
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+
+  .recipient-close,
+  .recipient-remove {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 5px;
+  }
+
+  .recipient-close {
+    border-color: transparent;
+  }
+
+  .recipient-close:hover,
+  .recipient-remove:hover {
+    border-color: var(--danger-border);
+    color: var(--danger);
+    background: var(--danger-bg);
+  }
+
+  .recipient-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 13px 0;
+  }
+
+  .recipient-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .recipient-input-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .recipient-input-icon {
+    flex: 0 0 auto;
+    color: var(--text-muted);
+  }
+
+  .recipient-input-row input {
+    min-width: 0;
+    flex: 1;
+    height: 32px;
+    padding: 6px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 5px;
+    outline: none;
+    background: var(--bg);
+    color: var(--text-primary);
+    font: 12px/1.2 'IBM Plex Mono', monospace;
+    transition: border-color 0.12s;
+  }
+
+  .recipient-input-row input:focus {
+    border-color: var(--accent);
+  }
+
+  .recipient-input-row input[aria-invalid='true'] {
+    border-color: var(--danger);
+  }
+
+  .recipient-error {
+    padding-left: 22px;
+    color: var(--danger);
+    font-size: 10px;
+  }
+
+  .recipient-add {
+    width: 100%;
+    gap: 6px;
+    min-height: 32px;
+    border-radius: 5px;
+    font: 500 12px/1 'DM Sans', sans-serif;
+  }
+
   .telemetry-console-row {
     display: flex;
     min-height: 60px;

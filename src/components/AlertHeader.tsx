@@ -10,12 +10,9 @@
  *  - SentinelAI brand mark with radar sweep animation
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { Bell, BellOff, Mail, Shield, Wifi, WifiOff } from 'lucide-react';
+import { Bell, BellOff, Shield, Wifi, WifiOff } from 'lucide-react';
 
 export interface AlertHeaderProps {
-  recipientEmail: string;
-  onEmailChange: (email: string) => void;
   audioEnabled: boolean;
   onAudioToggle: () => void;
   cameraActive: boolean;
@@ -23,40 +20,11 @@ export interface AlertHeaderProps {
 }
 
 export default function AlertHeader({
-  recipientEmail,
-  onEmailChange,
   audioEnabled,
   onAudioToggle,
   cameraActive,
   systemOnline,
 }: AlertHeaderProps) {
-  const [emailDraft, setEmailDraft] = useState(recipientEmail);
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Sync draft when prop changes (e.g., loaded from localStorage on mount)
-  useEffect(() => {
-    setEmailDraft(recipientEmail);
-  }, [recipientEmail]);
-
-  function handleEmailSubmit() {
-    if (emailDraft.trim() && emailDraft !== recipientEmail) {
-      onEmailChange(emailDraft.trim());
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }
-    inputRef.current?.blur();
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter') handleEmailSubmit();
-    if (e.key === 'Escape') {
-      setEmailDraft(recipientEmail);
-      inputRef.current?.blur();
-    }
-  }
-
   return (
     <header
       className="flex items-center justify-between px-5 py-3 gap-6 z-30 relative shrink-0"
@@ -80,51 +48,6 @@ export default function AlertHeader({
             Surveillance Platform
           </span>
         </div>
-      </div>
-
-      {/* ── Center: Email recipient input ─────── */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
-        <Mail size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-        <div className="relative flex-1">
-          <input
-            ref={inputRef}
-            id="alert-recipient-email"
-            type="email"
-            value={emailDraft}
-            onChange={(e) => setEmailDraft(e.target.value)}
-            onFocus={() => setEmailFocused(true)}
-            onBlur={() => { setEmailFocused(false); handleEmailSubmit(); }}
-            onKeyDown={handleKeyDown}
-            placeholder="alert-recipient@example.com"
-            style={{
-              width: '100%',
-              background: 'var(--bg)',
-              border: `1px solid ${emailFocused ? 'var(--accent)' : 'var(--border-2)'}`,
-              borderRadius: '6px',
-              padding: '8px 12px',
-              fontSize: '14px',
-              fontFamily: '"JetBrains Mono", monospace',
-              color: 'var(--text-primary)',
-              outline: 'none',
-              transition: 'border-color 0.12s',
-            }}
-          />
-          {saved && (
-            <span
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-fade-in"
-              style={{ fontSize: '10px', fontFamily: '"JetBrains Mono", monospace', color: 'var(--accent)' }}
-            >
-              Saved ✓
-            </span>
-          )}
-        </div>
-        <span
-          className="hidden md:block"
-          style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: '"JetBrains Mono", monospace',
-                   textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}
-        >
-          Alert Recipient
-        </span>
       </div>
 
       {/* ── Right: Status + Controls ──────────── */}
