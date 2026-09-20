@@ -29,10 +29,11 @@ import { analyzeAccident, resetAccidentState } from '@/lib/ai/accidentEngine';
 import type {
   DetectedPerson,
   DetectionBox,
+  IncidentApiResponse,
   IncidentPayload,
   ThreatType,
 } from '@/lib/types';
-import { CameraOff, Loader2 } from 'lucide-react';
+import { CameraOff, Loader2, Play, Square } from 'lucide-react';
 
 // ─────────────────────────────────────────────
 // Constants
@@ -271,6 +272,9 @@ function drawHUDOverlay(
 export interface CameraFeedProps {
   recipientEmail: string;
   audioEnabled: boolean;
+  monitoringEnabled: boolean;
+  onMonitoringToggle: () => void;
+  onIncidentSnapshot: (incidentId: string, snapshotDataUrl: string) => void;
   onStatsUpdate: (stats: {
     fps: number;
     inferenceMs: number;
@@ -286,9 +290,17 @@ export interface CameraFeedProps {
 // Component
 // ─────────────────────────────────────────────
 
-export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate }: CameraFeedProps) {
+export default function CameraFeed({
+  recipientEmail,
+  audioEnabled,
+  monitoringEnabled,
+  onMonitoringToggle,
+  onIncidentSnapshot,
+  onStatsUpdate,
+}: CameraFeedProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const snapshotCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameRef = useRef<number>(0);
   const lastFrameTimeRef = useRef<number>(0);
   const lastIncidentTimeRef = useRef<number>(0);
@@ -340,9 +352,24 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
     metadata: Record<string, unknown>
   ) => {
     const canvas = canvasRef.current;
-    if (!canvas || !recipientEmail) return;
+    const video = videoRef.current;
+    if (!canvas || !video || !recipientEmail) return;
 
     const snapshotBase64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+    let localSnapshotDataUrl: string | null = null;
+
+    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+      const snapshotCanvas = snapshotCanvasRef.current ?? document.createElement('canvas');
+      snapshotCanvasRef.current = snapshotCanvas;
+      snapshotCanvas.width = video.videoWidth;
+      snapshotCanvas.height = video.videoHeight;
+      const snapshotContext = snapshotCanvas.getContext('2d');
+
+      if (snapshotContext) {
+        snapshotContext.drawImage(video, 0, 0, snapshotCanvas.width, snapshotCanvas.height);
+        localSnapshotDataUrl = snapshotCanvas.toDataURL('image/jpeg', 0.82);
+      }
+    }
 
     const payload: IncidentPayload = {
       type,
@@ -356,15 +383,22 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
     };
 
     try {
-      await fetch('/api/incidents', {
+      const response = await fetch('/api/incidents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
+      if (localSnapshotDataUrl && response.ok) {
+        const result = (await response.json()) as IncidentApiResponse;
+        if (result.success) {
+          onIncidentSnapshot(result.incidentId, localSnapshotDataUrl);
+        }
+      }
     } catch (err) {
       console.error('[CameraFeed] Incident report failed:', err);
     }
-  }, [recipientEmail]);
+  }, [onIncidentSnapshot, recipientEmail]);
 
   // ── Main inference loop ──────────────────────
   const inferenceLoop = useCallback(async (timestamp: number) => {
@@ -611,7 +645,20 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
 
   // ── Camera initialization ────────────────────
   useEffect(() => {
+    if (!monitoringEnabled) {
+      setCameraError(null);
+      setCameraReady(false);
+      setModelsLoaded(false);
+      setActiveThreat(null);
+      onStatsUpdate({
+        fps: 0, inferenceMs: 0, personCount: 0, vehicleCount: 0,
+        activeThreat: null, modelsLoaded: false, cameraActive: false,
+      });
+      return;
+    }
+
     let stream: MediaStream | null = null;
+    let cancelled = false;
 
     async function init() {
       try {
@@ -622,6 +669,11 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
           audio: false,
         });
 
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
         const video = videoRef.current;
         if (!video) return;
 
@@ -631,6 +683,10 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
 
         // Load AI models
         const models = await loadModels();
+        if (cancelled) {
+          disposeModels();
+          return;
+        }
         modelsRef.current = models;
         setModelsLoaded(true);
 
@@ -657,6 +713,7 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
     init();
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(animFrameRef.current);
       stream?.getTracks().forEach((t) => t.stop());
       disposeModels();
@@ -664,11 +721,29 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
       resetAccidentState();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [monitoringEnabled]);
 
   // ─────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────
+
+  if (!monitoringEnabled) {
+    return (
+      <div className="camera-surface flex-1 flex flex-col items-center justify-center gap-4">
+        <div className="flex items-center justify-center camera-idle-icon">
+          <CameraOff size={24} style={{ color: 'var(--text-muted)' }} />
+        </div>
+        <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>Monitoring paused</p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Camera and AI models are not running.</p>
+        </div>
+        <button type="button" className="btn btn-accent" onClick={onMonitoringToggle}>
+          <Play size={14} />
+          Start monitoring
+        </button>
+      </div>
+    );
+  }
 
   if (cameraError) {
     return (
@@ -697,7 +772,17 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
   }
 
   return (
-    <div className="relative flex-1 bg-black overflow-hidden" style={{ contain: 'strict' }}>
+    <div className="camera-surface relative flex-1 overflow-hidden" style={{ contain: 'strict' }}>
+      <button
+        type="button"
+        className="camera-monitor-toggle"
+        onClick={onMonitoringToggle}
+        title="Stop camera and AI monitoring"
+      >
+        <Square size={12} />
+        Stop monitoring
+      </button>
+
       {/* Hidden video element — AI reads frames from here */}
       <video
         ref={videoRef}
@@ -719,7 +804,7 @@ export default function CameraFeed({ recipientEmail, audioEnabled, onStatsUpdate
       {!cameraReady && (
         <div
           className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-20"
-          style={{ background: 'rgba(13, 17, 23, 0.92)' }}
+          style={{ background: 'var(--camera-overlay)' }}
         >
           <Loader2 size={28} className="animate-spin" style={{ color: 'var(--accent)' }} />
           <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

@@ -10,6 +10,7 @@ export interface ThreatStatsProps {
   vehicleCount: number;
   activeThreat: ThreatType | null;
   modelsLoaded: boolean;
+  monitoringEnabled: boolean;
 }
 
 const THREAT_LABELS: Record<string, { label: string; color: string }> = {
@@ -25,6 +26,7 @@ export default function ThreatStats({
   vehicleCount,
   activeThreat,
   modelsLoaded,
+  monitoringEnabled,
 }: ThreatStatsProps) {
   const fpsColor =
     fps >= 12 ? 'var(--accent)' :
@@ -38,18 +40,22 @@ export default function ThreatStats({
 
   return (
     <div
-      className="flex items-center"
+      className="flex items-center h-full"
       style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
     >
 
       {/* Model status */}
-      <StatCell icon={<Cpu size={12} />} label="Model">
-        {modelsLoaded ? (
-          <span style={{ color: 'var(--accent)', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, fontWeight: 600 }}>
+      <StatCell icon={<Cpu size={14} />} label="Model">
+        {!monitoringEnabled ? (
+          <span style={{ color: 'var(--text-muted)', fontFamily: '"JetBrains Mono", monospace', fontSize: 14, fontWeight: 600 }}>
+            Paused
+          </span>
+        ) : modelsLoaded ? (
+          <span style={{ color: 'var(--accent)', fontFamily: '"JetBrains Mono", monospace', fontSize: 14, fontWeight: 600 }}>
             Ready
           </span>
         ) : (
-          <span className="animate-pulse" style={{ color: 'var(--warning)', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, fontWeight: 600 }}>
+          <span className="animate-pulse" style={{ color: 'var(--warning)', fontFamily: '"JetBrains Mono", monospace', fontSize: 14, fontWeight: 600 }}>
             Loading
           </span>
         )}
@@ -58,8 +64,8 @@ export default function ThreatStats({
       <Divider />
 
       {/* FPS */}
-      <StatCell icon={<Activity size={12} />} label="FPS">
-        <span style={{ color: fpsColor, fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
+      <StatCell icon={<Activity size={14} />} label="FPS">
+        <span style={{ color: fpsColor, fontFamily: '"JetBrains Mono", monospace', fontSize: 15, fontWeight: 700 }}>
           {fps.toFixed(0)}
         </span>
       </StatCell>
@@ -67,8 +73,8 @@ export default function ThreatStats({
       <Divider />
 
       {/* Inference latency */}
-      <StatCell icon={<Zap size={12} />} label="Latency">
-        <span style={{ color: latencyColor, fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
+      <StatCell icon={<Zap size={14} />} label="Latency">
+        <span style={{ color: latencyColor, fontFamily: '"JetBrains Mono", monospace', fontSize: 15, fontWeight: 700 }}>
           {inferenceMs > 0 ? `${inferenceMs.toFixed(0)}ms` : '—'}
         </span>
       </StatCell>
@@ -76,8 +82,8 @@ export default function ThreatStats({
       <Divider />
 
       {/* Person count */}
-      <StatCell icon={<Users size={12} />} label="Persons">
-        <span style={{ color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
+      <StatCell icon={<Users size={14} />} label="Persons">
+        <span style={{ color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace', fontSize: 15, fontWeight: 700 }}>
           {personCount}
         </span>
       </StatCell>
@@ -85,8 +91,8 @@ export default function ThreatStats({
       <Divider />
 
       {/* Vehicle count */}
-      <StatCell icon={<Car size={12} />} label="Vehicles">
-        <span style={{ color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace', fontSize: 13, fontWeight: 700 }}>
+      <StatCell icon={<Car size={14} />} label="Vehicles">
+        <span style={{ color: 'var(--text-primary)', fontFamily: '"JetBrains Mono", monospace', fontSize: 15, fontWeight: 700 }}>
           {vehicleCount}
         </span>
       </StatCell>
@@ -144,14 +150,14 @@ function StatCell({
 }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-0.5 px-4 py-2"
-      style={{ minWidth: 72 }}
+      className="flex flex-col items-center justify-center gap-1.5 px-6 py-3"
+      style={{ minWidth: 104 }}
     >
       <div className="flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
         {icon}
         <span
           style={{
-            fontSize: 9,
+            fontSize: 11,
             fontFamily: '"JetBrains Mono", monospace',
             fontWeight: 500,
             textTransform: 'uppercase',

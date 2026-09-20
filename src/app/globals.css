@@ -9,26 +9,77 @@
 @tailwind utilities;
 
 /* ── Google Fonts ──────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* ── CSS Custom Properties ─────────────────────────────────── */
-:root {
-  /* Core surfaces — GitHub dark-inspired, easy on eyes */
-  --bg:        #0d1117;
-  --surface:   #161b22;
-  --surface-2: #1c2230;
-  --border:    #21262d;
-  --border-2:  #30363d;
+:root,
+.theme-light {
+  /* Light, neutral surfaces with palette accents reserved for meaning */
+  --bg:        #eef2f3;
+  --surface:   #ffffff;
+  --surface-2: #f4f7f8;
+  --border:    #d7e0e3;
+  --border-2:  #b8c6cb;
+  --danger:    #db222a;
+  --warning:   #a56d16;
+  --accent:    #28784e;
+  --ruby:      #a31621;
+  --pale-sky:  #bfdbf7;
+  --yale-blue: #053c5e;
+  --teal:      #1f7a8c;
+  --accent-hover: #226440;
+  --scarlett:  #db222a;
+  --info:      #053c5e;
+  --success:   #28784e;
+  --danger-bg: #fbe9eb;
+  --warning-bg: #fff4d9;
+  --info-bg:   #e8f2f7;
+  --success-bg: #e8f4ed;
+  --camera-overlay: rgba(238, 242, 243, 0.96);
+  --danger-border: #e6adb4;
+  --warning-border: #e5c982;
+  --success-border: #a7cfb5;
+  --danger-hover: #f6d8dc;
+  --success-hover: #d5ebdd;
+  --camera-surface: #dfe7e9;
+  --text-primary:   #1f292e;
+  --text-secondary: #536168;
+  --text-muted:     #75838a;
+}
 
-  /* Semantic status colors */
-  --danger:    #f85149;
-  --warning:   #e3b341;
-  --accent:    #3fb950;
-
-  /* Text hierarchy */
-  --text-primary:   #e6edf3;
-  --text-secondary: #8b949e;
-  --text-muted:     #484f58;
+/* Dark mode uses the new palette as restrained accents over near-black surfaces. */
+#surveillance-console:not(.theme-light) {
+  --bg:        #0b0b0c;
+  --surface:   #151516;
+  --surface-2: #202021;
+  --border:    #343435;
+  --border-2:  #535354;
+  --text-primary:   #f6d8ae;
+  --text-secondary: #d7c4a5;
+  --text-muted:     #9b948b;
+  --accent:    #67b589;
+  --accent-hover: #83c59e;
+  --success:   #67b589;
+  --info:      #8ab9c5;
+  --warning:   #f0bd62;
+  --danger:    #db222a;
+  --ruby:      #a31621;
+  --scarlett:  #db222a;
+  --pale-sky:  #bfdbf7;
+  --yale-blue: #6b91a8;
+  --teal:      #1f7a8c;
+  --purple:    #730071;
+  --danger-bg: #3a1519;
+  --warning-bg: #3a2b16;
+  --info-bg:   #152d34;
+  --success-bg: #163124;
+  --danger-border: #85343b;
+  --warning-border: #866a36;
+  --success-border: #3f7455;
+  --danger-hover: #521c21;
+  --success-hover: #214a32;
+  --camera-overlay: rgba(11, 11, 12, 0.96);
+  --camera-surface: #050506;
 }
 
 /* ── Reset & Base ───────────────────────────────────────────── */
@@ -45,7 +96,7 @@
     overflow: hidden;
     background-color: var(--bg);
     color: var(--text-primary);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 14px;
@@ -66,7 +117,7 @@
   .glass {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 0;
+    border-radius: 8px;
   }
 
   .glass-sm {
@@ -108,7 +159,7 @@
     padding: 1px 6px;
     border-radius: 4px;
     font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -117,22 +168,22 @@
   }
 
   .badge-danger  {
-    background: rgba(248, 81, 73, 0.12);
+    background: var(--danger-bg);
     color: var(--danger);
-    border-color: rgba(248, 81, 73, 0.3);
+    border-color: var(--danger-border);
   }
   .badge-warning {
-    background: rgba(227, 179, 65, 0.1);
+    background: var(--warning-bg);
     color: var(--warning);
-    border-color: rgba(227, 179, 65, 0.3);
+    border-color: var(--warning-border);
   }
   .badge-accent {
-    background: rgba(63, 185, 80, 0.1);
+    background: var(--success-bg);
     color: var(--accent);
-    border-color: rgba(63, 185, 80, 0.3);
+    border-color: var(--success-border);
   }
   .badge-muted {
-    background: rgba(139, 148, 158, 0.08);
+    background: var(--surface-2);
     color: var(--text-secondary);
     border-color: var(--border-2);
   }
@@ -140,7 +191,7 @@
   /* ── Label hierarchy ── */
   .hud-label {
     font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -159,7 +210,8 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 11px;
+    min-height: 32px;
+    padding: 6px 12px;
     border-radius: 6px;
     font-size: 13px;
     font-weight: 500;
@@ -167,7 +219,14 @@
     user-select: none;
     border: 1px solid transparent;
     line-height: 1;
+    outline: none;
     transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .btn:focus-visible,
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--pale-sky);
+    outline-offset: 2px;
   }
 
   .btn-ghost {
@@ -181,27 +240,133 @@
   }
 
   .btn-danger {
-    background: rgba(248, 81, 73, 0.1);
+    background: var(--danger-bg);
     color: var(--danger);
-    border-color: rgba(248, 81, 73, 0.3);
+    border-color: var(--danger-border);
   }
   .btn-danger:hover {
-    background: rgba(248, 81, 73, 0.18);
+    background: var(--danger-hover);
   }
 
   .btn-accent {
-    background: rgba(63, 185, 80, 0.1);
+    background: var(--success-bg);
     color: var(--accent);
-    border-color: rgba(63, 185, 80, 0.3);
+    border-color: var(--success-border);
   }
   .btn-accent:hover {
-    background: rgba(63, 185, 80, 0.18);
+    background: var(--success-hover);
+  }
+
+  .console-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    min-height: 100%;
+    padding: 6px 12px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+  }
+
+  .telemetry-console-row {
+    display: flex;
+    min-height: 60px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .telemetry-console-row > div:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .camera-surface {
+    background: var(--camera-surface);
+  }
+
+  .camera-idle-icon {
+    width: 56px;
+    height: 56px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .camera-monitor-toggle {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 6px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font: 500 12px/1 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .camera-monitor-toggle:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: var(--danger-bg);
+  }
+
+  .console-toolbar-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 4px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font: 500 12px/1 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--yale-blue);
+    color: var(--text-primary);
+    background: var(--pale-sky);
+  }
+
+  @media (max-width: 640px) {
+    .console-toolbar-label {
+      display: none;
+    }
+
+    .console-toolbar {
+      padding-inline: 8px;
+    }
+
+    .telemetry-console-row {
+      min-height: 54px;
+    }
   }
 
   /* Threat flash on camera — opacity on a flat colored div (no box-shadow) */
   .threat-flash {
     animation: threat-border-pulse 0.65s ease-in-out 3;
   }
+}
+
+@layer utilities {
+  .bg-background { background-color: var(--bg) !important; }
+  .font-mono { font-family: 'IBM Plex Mono', monospace; }
 }
 
 /* ── Keyframes ──────────────────────────────────────────────── */

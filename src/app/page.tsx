@@ -16,6 +16,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
 import AlertHeader from '@/components/AlertHeader';
 import CameraFeed from '@/components/CameraFeed';
 import ThreatStats from '@/components/ThreatStats';
@@ -24,6 +25,8 @@ import type { ThreatType } from '@/lib/types';
 
 const EMAIL_STORAGE_KEY = 'sentinel_recipient_email';
 const AUDIO_STORAGE_KEY = 'sentinel_audio_enabled';
+const THEME_STORAGE_KEY = 'sentinel_theme';
+const MAX_LOCAL_SNAPSHOTS = 50;
 
 interface AIStats {
   fps: number;
@@ -49,6 +52,9 @@ export default function SurveillancePage() {
   // ── Persistent preferences ───────────────────
   const [recipientEmail, setRecipientEmail] = useState<string>('');
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [monitoringEnabled, setMonitoringEnabled] = useState(false);
+  const [localSnapshots, setLocalSnapshots] = useState<Record<string, string>>({});
 
   // ── AI live telemetry ────────────────────────
   const [aiStats, setAiStats] = useState<AIStats>(DEFAULT_STATS);
@@ -57,8 +63,26 @@ export default function SurveillancePage() {
   useEffect(() => {
     const savedEmail = localStorage.getItem(EMAIL_STORAGE_KEY) ?? '';
     const savedAudio = localStorage.getItem(AUDIO_STORAGE_KEY);
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
     setRecipientEmail(savedEmail);
     setAudioEnabled(savedAudio !== 'false');
+    setTheme(savedTheme === 'light' ? 'light' : 'dark');
+  }, []);
+
+  function handleThemeToggle() {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem(THEME_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
+  const handleIncidentSnapshot = useCallback((incidentId: string, snapshotDataUrl: string) => {
+    setLocalSnapshots((previous) => {
+      const next = { ...previous, [incidentId]: snapshotDataUrl };
+      const entries = Object.entries(next);
+      return Object.fromEntries(entries.slice(-MAX_LOCAL_SNAPSHOTS));
+    });
   }, []);
 
   // ── Persist email on change ──────────────────
@@ -84,7 +108,7 @@ export default function SurveillancePage() {
   return (
     <main
       id="surveillance-console"
-      className="flex flex-col h-screen w-screen overflow-hidden bg-background"
+      className={`flex flex-col h-screen w-screen overflow-hidden bg-background ${theme === 'light' ? 'theme-light' : ''}`}
     >
       {/* ── Top bar ─────────────────────────────── */}
       <AlertHeader
@@ -96,15 +120,32 @@ export default function SurveillancePage() {
         systemOnline={aiStats.modelsLoaded}
       />
 
-      {/* ── Telemetry bar ─────────────────────── */}
-      <ThreatStats
-        fps={aiStats.fps}
-        inferenceMs={aiStats.inferenceMs}
-        personCount={aiStats.personCount}
-        vehicleCount={aiStats.vehicleCount}
-        activeThreat={aiStats.activeThreat}
-        modelsLoaded={aiStats.modelsLoaded}
-      />
+      {/* ── Telemetry and console preferences ── */}
+      <div className="telemetry-console-row">
+        <ThreatStats
+          fps={aiStats.fps}
+          inferenceMs={aiStats.inferenceMs}
+          personCount={aiStats.personCount}
+          vehicleCount={aiStats.vehicleCount}
+          activeThreat={aiStats.activeThreat}
+          modelsLoaded={aiStats.modelsLoaded}
+          monitoringEnabled={monitoringEnabled}
+        />
+
+        <div className="console-toolbar" aria-label="Console preferences">
+          <span className="console-toolbar-label">Console view</span>
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={handleThemeToggle}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-pressed={theme === 'light'}
+          >
+            {theme === 'dark' ? <Moon size={13} /> : <Sun size={13} />}
+            <span>{theme === 'dark' ? 'Dark' : 'Light'}</span>
+          </button>
+        </div>
+      </div>
 
       {/* ── Main content: camera + drawer ────────── */}
       <div className="flex flex-1 overflow-hidden">
@@ -112,11 +153,14 @@ export default function SurveillancePage() {
         <CameraFeed
           recipientEmail={recipientEmail}
           audioEnabled={audioEnabled}
+          monitoringEnabled={monitoringEnabled}
+          onMonitoringToggle={() => setMonitoringEnabled((previous) => !previous)}
+          onIncidentSnapshot={handleIncidentSnapshot}
           onStatsUpdate={handleStatsUpdate}
         />
 
         {/* Right-side incident drawer */}
-        <IncidentDrawer />
+        <IncidentDrawer localSnapshots={localSnapshots} />
       </div>
     </main>
   );

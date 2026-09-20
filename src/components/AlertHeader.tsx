@@ -59,32 +59,32 @@ export default function AlertHeader({
 
   return (
     <header
-      className="flex items-center justify-between px-4 py-2.5 gap-4 z-30 relative shrink-0"
+      className="flex items-center justify-between px-5 py-3 gap-6 z-30 relative shrink-0"
       style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
     >
 
       {/* ── Brand ────────────────────────────── */}
-      <div className="flex items-center gap-2.5 shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
         {/* Simple static shield — no spinning animation */}
         <div
-          className="w-7 h-7 flex items-center justify-center rounded-md"
+          className="w-9 h-9 flex items-center justify-center rounded-md"
           style={{ background: 'rgba(63, 185, 80, 0.1)', border: '1px solid rgba(63, 185, 80, 0.25)' }}
         >
-          <Shield size={14} style={{ color: 'var(--accent)' }} />
+          <Shield size={18} style={{ color: 'var(--accent)' }} />
         </div>
         <div className="flex flex-col leading-none gap-0.5">
-          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+          <span className="text-base font-semibold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
             SentinelAI
           </span>
-          <span className="hud-label" style={{ fontSize: '9px' }}>
+          <span className="hud-label" style={{ fontSize: '10px' }}>
             Surveillance Platform
           </span>
         </div>
       </div>
 
       {/* ── Center: Email recipient input ─────── */}
-      <div className="flex items-center gap-2 flex-1 max-w-sm">
-        <Mail size={13} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+      <div className="flex items-center gap-3 flex-1 max-w-md">
+        <Mail size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
         <div className="relative flex-1">
           <input
             ref={inputRef}
@@ -101,8 +101,8 @@ export default function AlertHeader({
               background: 'var(--bg)',
               border: `1px solid ${emailFocused ? 'var(--accent)' : 'var(--border-2)'}`,
               borderRadius: '6px',
-              padding: '5px 10px',
-              fontSize: '13px',
+              padding: '8px 12px',
+              fontSize: '14px',
               fontFamily: '"JetBrains Mono", monospace',
               color: 'var(--text-primary)',
               outline: 'none',
@@ -128,7 +128,7 @@ export default function AlertHeader({
       </div>
 
       {/* ── Right: Status + Controls ──────────── */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-4 shrink-0">
 
         {/* Camera status */}
         <div className="flex items-center gap-1.5">
@@ -139,7 +139,7 @@ export default function AlertHeader({
             </>
           ) : (
             <>
-              <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: 'var(--text-muted)' }} />
+              <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: 'var(--text-muted)' }} />
               <span className="hud-label">Offline</span>
             </>
           )}
@@ -154,9 +154,9 @@ export default function AlertHeader({
           title={systemOnline ? 'AI models ready' : 'AI models loading'}
         >
           {systemOnline ? (
-            <Wifi size={13} style={{ color: 'var(--accent)' }} />
+            <Wifi size={15} style={{ color: 'var(--accent)' }} />
           ) : (
-            <WifiOff size={13} style={{ color: 'var(--text-muted)' }} />
+            <WifiOff size={15} style={{ color: 'var(--text-muted)' }} />
           )}
         </div>
 
@@ -166,14 +166,14 @@ export default function AlertHeader({
           onClick={onAudioToggle}
           className="btn-ghost"
           style={{
-            padding: '5px',
+            padding: '7px',
             borderRadius: '6px',
             color: audioEnabled ? 'var(--accent)' : 'var(--text-muted)',
           }}
           title={audioEnabled ? 'Mute alerts' : 'Enable audio alerts'}
           aria-label="Toggle audio alerts"
         >
-          {audioEnabled ? <Bell size={14} /> : <BellOff size={14} />}
+          {audioEnabled ? <Bell size={16} /> : <BellOff size={16} />}
         </button>
 
         {/* Version — simple text, no border */}

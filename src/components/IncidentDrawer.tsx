@@ -44,7 +44,7 @@ function relativeTime(iso: string): string {
   return `${Math.floor(diff / 3600)}h ago`;
 }
 
-export default function IncidentDrawer() {
+export default function IncidentDrawer({ localSnapshots }: { localSnapshots: Record<string, string> }) {
   const [incidents, setIncidents] = useState<IncidentRecord[]>([]);
   const [selected, setSelected] = useState<IncidentRecord | null>(null);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
@@ -151,8 +151,14 @@ export default function IncidentDrawer() {
             incidents.map((incident) => (
               <IncidentCard
                 key={incident.id}
-                incident={incident}
-                onClick={() => setSelected(incident)}
+                incident={{
+                  ...incident,
+                  snapshot_url: localSnapshots[incident.id] ?? incident.snapshot_url,
+                }}
+                onClick={() => setSelected({
+                  ...incident,
+                  snapshot_url: localSnapshots[incident.id] ?? incident.snapshot_url,
+                })}
               />
             ))
           )}
