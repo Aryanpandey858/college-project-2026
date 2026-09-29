@@ -31,6 +31,7 @@ import type {
   DetectionBox,
   IncidentApiResponse,
   IncidentPayload,
+  IncidentRecord,
   ThreatType,
 } from '@/lib/types';
 import { CameraOff, Loader2, Play, Square } from 'lucide-react';
@@ -275,6 +276,7 @@ export interface CameraFeedProps {
   monitoringEnabled: boolean;
   onMonitoringToggle: () => void;
   onIncidentSnapshot: (incidentId: string, snapshotDataUrl: string) => void;
+  onIncidentDetected?: (incident: IncidentRecord) => void;
   onStatsUpdate: (stats: {
     fps: number;
     inferenceMs: number;
@@ -296,6 +298,7 @@ export default function CameraFeed({
   monitoringEnabled,
   onMonitoringToggle,
   onIncidentSnapshot,
+  onIncidentDetected,
   onStatsUpdate,
 }: CameraFeedProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -353,7 +356,10 @@ export default function CameraFeed({
   ) => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
-    if (!canvas || !video || recipientEmails.length === 0) return;
+    if (!canvas || !video) return;
+
+    const fallbackEmail = recipientEmails[0] || 'operator@sentinel.local';
+    const effectiveRecipients = recipientEmails.length > 0 ? recipientEmails : [fallbackEmail];
 
     const snapshotBase64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
     let localSnapshotDataUrl: string | null = null;
@@ -371,35 +377,51 @@ export default function CameraFeed({
       }
     }
 
-    const payload: IncidentPayload = {
+    const resolvedSnapshotUrl = localSnapshotDataUrl || `data:image/jpeg;base64,${snapshotBase64}`;
+    const incidentId = crypto.randomUUID();
+    const title = `${type} DETECTED — ${new Date().toLocaleTimeString()}`;
+
+    // 1. Immediately cache snapshot thumbnail
+    onIncidentSnapshot(incidentId, resolvedSnapshotUrl);
+
+    // 2. Immediately surface incident in the log bar (no waiting for network round trip)
+    const optimisticRecord: IncidentRecord = {
+      id: incidentId,
       type,
-      title: `${type} DETECTED — ${new Date().toLocaleTimeString()}`,
+      title,
+      description,
+      confidence,
+      snapshot_url: resolvedSnapshotUrl,
+      recipient_email: fallbackEmail,
+      live_token: '',
+      metadata,
+      created_at: new Date().toISOString(),
+    };
+    onIncidentDetected?.(optimisticRecord);
+
+    const payload: IncidentPayload = {
+      id: incidentId,
+      type,
+      title,
       description,
       confidence,
       snapshotBase64,
       snapshotMimeType: 'image/jpeg',
-      recipientEmail: recipientEmails[0],
-      recipientEmails,
+      recipientEmail: fallbackEmail,
+      recipientEmails: effectiveRecipients,
       metadata,
     };
 
     try {
-      const response = await fetch('/api/incidents', {
+      await fetch('/api/incidents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      if (localSnapshotDataUrl && response.ok) {
-        const result = (await response.json()) as IncidentApiResponse;
-        if (result.success) {
-          onIncidentSnapshot(result.incidentId, localSnapshotDataUrl);
-        }
-      }
     } catch (err) {
       console.error('[CameraFeed] Incident report failed:', err);
     }
-  }, [onIncidentSnapshot, recipientEmails]);
+  }, [onIncidentDetected, onIncidentSnapshot, recipientEmails]);
 
   // ── Main inference loop ──────────────────────
   const inferenceLoop = useCallback(async (timestamp: number) => {

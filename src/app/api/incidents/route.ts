@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as IncidentPayload;
 
     const {
+      id,
       type,
       title,
       description,
@@ -26,12 +27,14 @@ export async function POST(request: NextRequest) {
       .map((email) => email.trim())
       .filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))));
 
-    if (!type || !title || !description || validRecipients.length === 0 || !snapshotBase64) {
+    const primaryRecipient = validRecipients[0] || 'operator@sentinel.local';
+
+    if (!type || !title || !description || !snapshotBase64) {
       return NextResponse.json(
         {
           success: false,
           error:
-            'Missing required fields: type, title, valid recipient email, snapshotBase64',
+            'Missing required fields: type, title, description, snapshotBase64',
         },
         { status: 400 }
       );
@@ -82,12 +85,13 @@ export async function POST(request: NextRequest) {
       .from('incidents')
       .insert([
         {
+          ...(id ? { id } : {}),
           type,
           title,
           description,
           confidence,
           snapshot_url: publicUrlData.publicUrl,
-          recipient_email: validRecipients[0],
+          recipient_email: primaryRecipient,
           live_token: liveToken,
           metadata,
         },
@@ -105,31 +109,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try {
-      await sendIncidentAlertEmail({
-        recipientEmail: validRecipients[0],
-        recipientEmails: validRecipients,
-        type,
-        title,
-        description,
-        confidence,
-        snapshotUrl: publicUrlData.publicUrl,
-        liveViewerUrl,
-        createdAt: insertedIncident.created_at,
-      });
-    } catch (emailError) {
-      console.error('Email send failed:', emailError);
-
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            emailError instanceof Error
-              ? emailError.message
-              : 'Email dispatch failed',
-        },
-        { status: 500 }
-      );
+    if (validRecipients.length > 0) {
+      try {
+        await sendIncidentAlertEmail({
+          recipientEmail: primaryRecipient,
+          recipientEmails: validRecipients,
+          type,
+          title,
+          description,
+          confidence,
+          snapshotUrl: publicUrlData.publicUrl,
+          liveViewerUrl,
+          createdAt: insertedIncident.created_at,
+        });
+      } catch (emailError) {
+        console.error('Email send failed (non-blocking for incident persistence):', emailError);
+      }
     }
 
     const response: IncidentApiResponse = {

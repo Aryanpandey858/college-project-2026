@@ -22,7 +22,7 @@ import CameraFeed from '@/components/CameraFeed';
 import RecipientPopover, { isValidRecipientEmail } from '@/components/RecipientPopover';
 import ThreatStats from '@/components/ThreatStats';
 import IncidentDrawer from '@/components/IncidentDrawer';
-import type { ThreatType } from '@/lib/types';
+import type { IncidentRecord, ThreatType } from '@/lib/types';
 
 const EMAIL_STORAGE_KEY = 'sentinel_recipient_email';
 const RECIPIENTS_STORAGE_KEY = 'sentinel_recipient_emails';
@@ -57,6 +57,7 @@ export default function SurveillancePage() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [monitoringEnabled, setMonitoringEnabled] = useState(false);
   const [localSnapshots, setLocalSnapshots] = useState<Record<string, string>>({});
+  const [liveIncident, setLiveIncident] = useState<IncidentRecord | null>(null);
 
   // ── AI live telemetry ────────────────────────
   const [aiStats, setAiStats] = useState<AIStats>(DEFAULT_STATS);
@@ -97,6 +98,10 @@ export default function SurveillancePage() {
       const entries = Object.entries(next);
       return Object.fromEntries(entries.slice(-MAX_LOCAL_SNAPSHOTS));
     });
+  }, []);
+
+  const handleIncidentDetected = useCallback((incident: IncidentRecord) => {
+    setLiveIncident(incident);
   }, []);
 
   // ── Persist recipients on change ─────────────
@@ -176,11 +181,15 @@ export default function SurveillancePage() {
           monitoringEnabled={monitoringEnabled}
           onMonitoringToggle={() => setMonitoringEnabled((previous) => !previous)}
           onIncidentSnapshot={handleIncidentSnapshot}
+          onIncidentDetected={handleIncidentDetected}
           onStatsUpdate={handleStatsUpdate}
         />
 
         {/* Right-side incident drawer */}
-        <IncidentDrawer localSnapshots={localSnapshots} />
+        <IncidentDrawer
+          localSnapshots={localSnapshots}
+          liveIncident={liveIncident}
+        />
       </div>
     </main>
   );

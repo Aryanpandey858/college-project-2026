@@ -129,6 +129,8 @@ export interface IncidentRecord {
 
 /** Payload the browser client POSTs to /api/incidents when a threat is triggered */
 export interface IncidentPayload {
+  /** Optional client-generated UUID for optimistic updates and realtime deduplication */
+  id?: string;
   /** Threat classification */
   type: ThreatType;
   /** Short human-readable incident title */

@@ -1,5 +1,3 @@
-// live/[token]/page.tsx: Emergency responder route that authenticates a 30-minute HMAC token and displays the active surveillance stream.
-
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -60,9 +58,9 @@ export default function LiveViewerPage({
           minHeight: '100vh',
           display: 'grid',
           placeItems: 'center',
-          background: '#090d17',
-          color: '#e5ecff',
-          fontFamily: 'Arial, sans-serif',
+          background: '#f3f5f9',
+          color: '#1f2937',
+          fontFamily: 'Inter, Arial, sans-serif',
         }}
       >
         Verifying session...
@@ -77,29 +75,30 @@ export default function LiveViewerPage({
           minHeight: '100vh',
           display: 'grid',
           placeItems: 'center',
-          background: '#090d17',
-          color: '#e5ecff',
-          fontFamily: 'Arial, sans-serif',
+          background: '#f3f5f9',
+          color: '#1f2937',
+          fontFamily: 'Inter, Arial, sans-serif',
         }}
       >
         <div
           style={{
-            background: '#121a2d',
-            border: '1px solid #2d406f',
+            background: '#ffffff',
+            border: '1px solid #dfe7ef',
             borderRadius: 18,
             padding: 32,
             maxWidth: 520,
             width: '90%',
             textAlign: 'center',
+            boxShadow: '0 10px 30px rgba(15, 23, 42, 0.04)',
           }}
         >
-          <h1 style={{ margin: 0, fontSize: 28, color: '#ff7b7b' }}>
-            Session Expired
+          <h1 style={{ margin: 0, fontSize: 28, color: '#b91c1c' }}>
+            Session expired
           </h1>
-          <p style={{ marginTop: 16, fontSize: 16, color: '#dfe9ff' }}>
+          <p style={{ marginTop: 16, fontSize: 16, color: '#475569' }}>
             This live access link is no longer valid or has expired.
           </p>
-          <p style={{ color: '#9bb0d9', marginTop: 12 }}>
+          <p style={{ color: '#64748b', marginTop: 12 }}>
             {verification.error ?? 'Invalid or expired token'}
           </p>
         </div>
@@ -120,9 +119,9 @@ export default function LiveViewerPage({
     <main
       style={{
         minHeight: '100vh',
-        background: '#090d17',
-        color: '#e5ecff',
-        fontFamily: 'Arial, sans-serif',
+        background: '#f3f5f9',
+        color: '#1f2937',
+        fontFamily: 'Inter, Arial, sans-serif',
         padding: 20,
       }}
     >
@@ -130,10 +129,11 @@ export default function LiveViewerPage({
         style={{
           maxWidth: 1100,
           margin: '0 auto',
-          background: '#111827',
-          border: '1px solid #2d406f',
+          background: '#ffffff',
+          border: '1px solid #dfe7ef',
           borderRadius: 20,
           overflow: 'hidden',
+          boxShadow: '0 16px 40px rgba(15, 23, 42, 0.06)',
         }}
       >
         <div
@@ -142,8 +142,8 @@ export default function LiveViewerPage({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: '#101a30',
-            borderBottom: '1px solid #243865',
+            background: '#f8fafc',
+            borderBottom: '1px solid #e2e8f0',
           }}
         >
           <div>
@@ -151,11 +151,11 @@ export default function LiveViewerPage({
               style={{
                 fontSize: 11,
                 letterSpacing: '0.12em',
-                color: '#9bb0d9',
+                color: '#64748b',
                 textTransform: 'uppercase',
               }}
             >
-              Live Incident Viewer
+              Live incident viewer
             </div>
             <div style={{ fontSize: 20, marginTop: 6, fontWeight: 700 }}>
               Incident #{verification.incidentId.slice(0, 8)}
@@ -164,9 +164,9 @@ export default function LiveViewerPage({
 
           <div
             style={{
-              background: '#16253f',
-              color: '#8ef0b0',
-              border: '1px solid #2d6a4d',
+              background: '#eef2ff',
+              color: '#3749c9',
+              border: '1px solid #c7d2fe',
               borderRadius: 999,
               padding: '10px 16px',
               fontWeight: 700,
@@ -183,7 +183,7 @@ export default function LiveViewerPage({
             display: 'grid',
             placeItems: 'center',
             background:
-              'radial-gradient(circle at center, rgba(59,130,246,0.12), rgba(9,13,23,1) 55%)',
+              'linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%)',
             padding: 20,
           }}
         >
@@ -193,14 +193,14 @@ export default function LiveViewerPage({
               height: 500,
               borderRadius: 20,
               background:
-                'linear-gradient(135deg, rgba(15,23,42,1), rgba(17,24,39,1))',
-              border: '1px solid #2d406f',
+                'linear-gradient(135deg, #ffffff, #f1f5f9)',
+              border: '1px solid #dfe7ef',
               display: 'grid',
               placeItems: 'center',
-              color: '#8aa6d9',
+              color: '#475569',
               fontSize: 22,
               textAlign: 'center',
-              boxShadow: '0 0 40px rgba(59,130,246,0.18)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)',
             }}
           >
             Live stream placeholder

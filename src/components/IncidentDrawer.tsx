@@ -39,18 +39,42 @@ const THREAT_CONFIG: Record<string, {
 
 function relativeTime(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 5)   return 'just now';
   if (diff < 60)  return `${Math.floor(diff)}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   return `${Math.floor(diff / 3600)}h ago`;
 }
 
-export default function IncidentDrawer({ localSnapshots }: { localSnapshots: Record<string, string> }) {
+export interface IncidentDrawerProps {
+  localSnapshots: Record<string, string>;
+  liveIncident?: IncidentRecord | null;
+}
+
+export default function IncidentDrawer({ localSnapshots, liveIncident }: IncidentDrawerProps) {
   const [incidents, setIncidents] = useState<IncidentRecord[]>([]);
   const [selected, setSelected] = useState<IncidentRecord | null>(null);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // ── Fetch recent incidents on mount ────────────────────────
+  const localSnapshotsRef = useRef(localSnapshots);
+  localSnapshotsRef.current = localSnapshots;
+
+  // ── Handle immediate client-side detected incident (optimistic update) ──
+  useEffect(() => {
+    if (!liveIncident) return;
+    setIncidents((prev) => {
+      const existsIndex = prev.findIndex((item) => item.id === liveIncident.id);
+      if (existsIndex !== -1) {
+        const next = [...prev];
+        next[existsIndex] = { ...next[existsIndex], ...liveIncident };
+        return next;
+      }
+      return [liveIncident, ...prev].slice(0, MAX_INCIDENTS);
+    });
+    listRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [liveIncident]);
+
+  // ── Fetch recent incidents on mount (persisted history) ────
   useEffect(() => {
     async function fetchRecent() {
       const { data, error } = await supabase
@@ -60,13 +84,30 @@ export default function IncidentDrawer({ localSnapshots }: { localSnapshots: Rec
         .limit(MAX_INCIDENTS);
 
       if (!error && data) {
-        setIncidents(data as IncidentRecord[]);
+        setIncidents((prev) => {
+          const fetched = data as IncidentRecord[];
+          const existingIds = new Set(prev.map((i) => i.id));
+          const uniqueFetched = fetched.filter((item) => !existingIds.has(item.id));
+          const updatedPrev = prev.map((item) => {
+            const serverMatch = fetched.find((f) => f.id === item.id);
+            return serverMatch
+              ? {
+                  ...item,
+                  ...serverMatch,
+                  snapshot_url: localSnapshotsRef.current[item.id] || serverMatch.snapshot_url || item.snapshot_url,
+                }
+              : item;
+          });
+          const merged = [...updatedPrev, ...uniqueFetched];
+          merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          return merged.slice(0, MAX_INCIDENTS);
+        });
       }
     }
     fetchRecent();
   }, []);
 
-  // ── Subscribe to Supabase Realtime ─────────────────────────
+  // ── Subscribe to Supabase Realtime (live streaming) ─────────
   useEffect(() => {
     const channel = supabase
       .channel('public:incidents')
@@ -75,7 +116,19 @@ export default function IncidentDrawer({ localSnapshots }: { localSnapshots: Rec
         { event: 'INSERT', schema: 'public', table: 'incidents' },
         (payload) => {
           const newIncident = payload.new as IncidentRecord;
-          setIncidents((prev) => [newIncident, ...prev].slice(0, MAX_INCIDENTS));
+          setIncidents((prev) => {
+            const index = prev.findIndex((item) => item.id === newIncident.id);
+            if (index !== -1) {
+              // Deduplicate: merge server values with optimistic record, keeping snapshot
+              const next = [...prev];
+              next[index] = {
+                ...newIncident,
+                snapshot_url: localSnapshotsRef.current[newIncident.id] || newIncident.snapshot_url || next[index].snapshot_url,
+              };
+              return next;
+            }
+            return [newIncident, ...prev].slice(0, MAX_INCIDENTS);
+          });
           // Auto-scroll to top when new incident arrives
           listRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -200,20 +253,24 @@ function IncidentCard({
     >
       {/* Snapshot thumbnail */}
       <div
-        className="shrink-0 overflow-hidden"
+        className="shrink-0 overflow-hidden flex items-center justify-center"
         style={{
           width: 54, height: 38, borderRadius: 4,
           background: 'var(--bg)',
           border: '1px solid var(--border-2)',
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={incident.snapshot_url}
-          alt="snapshot"
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
+        {incident.snapshot_url ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={incident.snapshot_url}
+            alt="snapshot"
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <cfg.Icon size={16} style={{ color: 'var(--text-muted)' }} />
+        )}
       </div>
 
       {/* Content */}
